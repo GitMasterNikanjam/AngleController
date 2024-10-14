@@ -827,7 +827,7 @@ class AngleController_SingleDrive
         bool setMode(const uint8_t &mode);
 
         // Set inputs data for controller.
-        void setInputs(const AngleControllerNamespace::Inputs &inputs);
+        void setInputs(const AngleControllerNamespace::Inputs &data);
         
         // Return instance frequency of update controller variable. It can changed by rate of call the update function.
         float getFrq(void);    

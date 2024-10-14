@@ -1000,7 +1000,7 @@ AngleController_DualDriveEq::AngleController_DualDriveEq()
     /*20*/  parameters.basicParams.UPDATE_MODE = 0;
     /*21*/  parameters.basicParams.PRIM_DEADZONE = 0;  
     /*22*/  parameters.basicParams.PRIM_MAX = 0;  
-    /*23*/  parameters.basicParams.PRIM_RANGE = 0;          
+    /*23*/  parameters.basicParams.PRIM_RANGE = 100;          
     /*24*/  parameters.basicParams.SECON_RANGE = 0;          
     /*25*/  parameters.basicParams.DIR_POL = 0; 
 
@@ -1071,8 +1071,14 @@ bool AngleController_DualDriveEq::checkParams(const AngleControllerNamespace::Du
 
     bool param_cond = AngleController_SingleDrive::checkParams(params.basicParams);
 
-    param_cond = param_cond && (params.BIAS < 0) && (params.FLTDQ < 0) && (params.RAT_EQ_D < 0) &&
-                               (params.RAT_EQ_I < 0) && (params.RAT_EQ_IMAX < 0) && (params.RAT_EQ_P < 0);
+    param_cond = param_cond && (params.BIAS >= 0) && (params.FLTDQ >= 0) && (params.RAT_EQ_D >= 0) &&
+                               (params.RAT_EQ_I >= 0) && (params.RAT_EQ_IMAX >= 0) && (params.RAT_EQ_P >= 0);
+
+    if(!param_cond)
+    {
+        errorMessage = "Error AngleController: one or some parameters have not correct value.";
+        return false;
+    }
 
     return param_cond;
 }
@@ -1107,11 +1113,13 @@ bool AngleController_DualDriveEq::init(void)
     
     if(!_map.init())
     {
+        errorMessage = _map.errorMessage;
         return false;
     }
 
     if(!_mapSlave.init())
     {
+        errorMessage = _mapSlave.errorMessage;
         return false;
     }
 
@@ -1164,21 +1172,24 @@ bool AngleController_DualDriveEq::init(void)
     
     if(!_PIDRate.init())
     {
+        errorMessage = _PIDRate.errorMessage;
         return false;
     }
 
     if(!_PIDRateSlave.init())
     {
+        errorMessage = _PIDRateSlave.errorMessage;
         return false;
     }
 
     if(!_PIDEq.init())
     {
+        errorMessage = _PIDEq.errorMessage;
         return false;
     }
 
     _limitSlewRate.setLimit(parameters.basicParams.RAT_SLEWRATE);
-
+    
     return true;
 }
 
