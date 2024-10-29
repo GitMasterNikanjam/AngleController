@@ -111,172 +111,280 @@ Rate_des[deg/s]->Limit->Lowpass_Filter(FLTT)->SlewRateLimit->|-Rate1->|Integral_
 
 namespace AngleControllerNamespace
 {
-    // Full parameters struct for SingleDrive AngleController
+    /**
+     * @struct SingleDriveParams
+     * @brief Full parameters struct for SingleDrive AngleController
+     */
     struct SingleDriveParams
     {
-        
-        // /*1*/
-        // [-]. Angle controller P gain
+        /**
+         * #### Param #1
+         * @brief Angle controller P gain. [-]
+         * @note - Convert error angle [deg] to internal demanded rate [deg/s].
+         */
         float ANG_P; 
 
-        // /*2*/
-        // [-]. Rate controller P gain               
+        /**
+         * #### Param #2
+         * @brief Rate controller P gain. [-]
+         * @note - Convert error rate [deg/s] to primary output control signal.
+         */       
         float RAT_P; 
 
-        // /*3*/
-        // [-]. Rate controller I gain               
+        /**
+         * #### Param #3
+         * @brief Rate controller I gain. [-]
+         * @note - Convert error rate [deg/s] to primary output control signal.
+         */           
         float RAT_I;  
-                
-        // /*4*/
-        // [-]. Rate controller D gain              
+
+        /**
+         * #### Param #4
+         * @brief Rate controller D gain. [-]
+         * @note - Convert error rate [deg/s] to primary output control signal.
+         *  */                 
         float RAT_D; 
 
-        // /*5*/
-        // [-]. controller feed forward gain type1. (For angle controller).               
+        /**
+         * #### Param #5
+         * @brief Controller feed forward gain type1. (For angle controller). [-]
+         * @note - Convert target rate [deg/s] at angle mode to internal demanded rate [deg/s].
+         */          
         float FF1; 
 
-        // /*6*/
-        // [-]. controller feed forward gain type2. (for rate controller)                 
+        /**
+         * #### Param #6
+         * @brief Controller feed forward gain type2. (for rate controller)
+         * @note - Convert internal demanded rate [deg/s] to primary output control signal.
+         */               
         float FF2;  
 
-        // /*7*/
-        // [Hz]. Lowpass filter frequency for target rate. **Hint: 0 value is equal to disable                
+        /**
+         * #### Param #7
+         * @brief Lowpass filter frequency for target rate. [Hz]
+         * @note - Value 0 disabled filter.
+         */              
         float FLTT;                 
         
-        // /*8*/   
-        // [Hz]. Lowpass filter frequency for derivative of rate. **Hint: 0 value is equal to disable
+        /**
+         * #### Param #8
+         * @brief Lowpass filter frequency for derivative of rate. [Hz]
+         * @note - Value 0 disabled filter. 
+         */
         float FLTD;                  
         
-        // /*9*/   
-        // [-]. Lowpass filter frequency for controller output. **Hint: 0 value is equal to disable 
+        /**
+         * @brief Lowpass filter frequency for controller output. [Hz]
+         * @note - Value 0 disabled filter.
+         */
         float FLTO;                 
         
-        // /*10*/  
-        // [deg]. Upper limitation angle for controller. It works at all modes.
+        /**
+         * #### Param #10
+         * @brief Upper limitation angle for controller. [deg]
+         * @note - It works at all modes.
+         */
         float ANG_UP_LIMIT;          
         
-        // /*11*/  
-        // [deg]. Down limitation angle for controller. it works at all modes.
+        /**
+         * #### Param #11
+         * @brief Down limitation angle for controller. [deg]
+         * @note - It works at all modes.
+         */
         float ANG_DOWN_LIMIT;       
         
-        // /*12*/  
-        // [-]. Max integral control output for controller output. Hint: 0 Value is equal to Disable
+        /**
+         * #### Param #12
+         * @brief Max integral control output for rate controller output. [-]
+         * @note - Value 0 means Disabled.
+         */
         float RAT_IMAX;             
         
-        // /*13*/  
-        // [deg/s]. Max Target rate. **Hint: 0 value is equal to disable
+        /**
+         * #### Param #13
+         * @brief Max internal demanded rate rate. [deg/s]
+         * @note - Value 0 means Disabled.
+         */
         float RAT_MAX;              
         
-        // /*14*/  
-        // [deg/s]. Target rate magnitude for fast movement state.
+        /**
+         * #### Param #14
+         * @brief Target rate magnitude for fast movement state. [deg/s]
+         */
         float RAT_FAST;             
         
-        // /*15*/  
-        // [deg/s]. Target rate magnetude for slow movement state.
+        /**
+         * #### Param #15
+         * @brief Target rate magnetude for slow movement state. [deg/s]
+         */
         float RAT_SLOW;             
         
-        // /*16*/  
-        // [deg/s^2]. angle acceleration/decleration magnetude limitation.
+        /**
+         * #### Param #16
+         * @brief Acceleration/Decleration magnetude limitation. [deg/s^2]
+         * @note
+         */
         float RAT_SLEWRATE;         
         
-        // /*17*/  
-        // [deg/s]. Max feedForward control output for target rate. **Hint: 0 value is equal to disable 
+        /**
+         * #### Param #17
+         * @brief Max feedForward control output for feedforward type1. [deg/s]
+         * @note - Value 0 means Disabled.
+         */
         float FF1_MAX;              
         
-        // /*18*/ 
-        // [-]. Max feedforward control output for controller output. **Hint: 0 value is equal to disable 
+        /**
+         * #### Param #18
+         * @brief Max feedforward control output for feedforward type2. [-]
+         * @note - Value 0 means Disabled.
+         */
         float FF2_MAX;              
 
-        // /*19*/
-        // [Hz]. Controller loop frequency.
-        // 0: Free Frequency-> time and frequency changed when controller become update.
-        // Non zero: Lock Frequency-> time and frequency of controller update locked to FRQ value.
+        /**
+         * #### Param #19
+         * @brief  Controller loop frequency. [Hz]
+         * @note - Value: 0 -> Free Frequency-> time and frequency changed when controller become update.
+         * @note - Value: non zero -> Lock Frequency-> time and frequency of controller update locked to FRQ value.
+         *  */ 
         float FRQ;                      
 
-        // /*20*/
-        // [-]. Controller update mode.
-        // 0: Manual update-> Controller output updated when call update function.
-        // 1: Auto update-> Controller output updated automatically at separated thread. ** FRQ parameter must be non zero, otherwise this mode not worked.
+        /**
+         * #### Param #20
+         * @brief Controller update mode. [-]
+         * @note - 0: Manual update-> Controller output updated when call update function.
+         * @note - 1: Auto update-> Controller output updated automatically at separated thread. 
+         * @note - For Auto update mode **FRQ** parameter must be non zero, otherwise Auto update mode not worked.
+         */
         uint8_t UPDATE_MODE;
         
-        // /*21*/  
-        // [-]. PrimaryOutput deadzone value for maped controller output. **Hint: 0 value is equal to disable
+        /**
+         * #### Param #21
+         * @brief PrimaryOutput deadzone value for maped controller output.
+         * @note - Value 0 means Disabled.
+         */
         float PRIM_DEADZONE;       
         
-        // /*22*/ 
-        // [-]. Max PrimaryOutput value for maped controller output. **Hint: 0 value is equal to disable 
+        /**
+         * #### Param #22
+         * @brief Max PrimaryOutput value for maped controller output.
+         * @note - Value 0 means Disabled.
+         */
         float PRIM_MAX;            
         
-        // /*23*/  
-        // [-]. Range PrimaryOutput value for maped controller output. **Hint: 0 value is equal to disable
+        /**
+         * #### Param #23
+         * @brief Range PrimaryOutput value for maped controller output.
+         * @note - Value 0 means Disabled.
+         */
         float PRIM_RANGE;          
-       
-        // /*24*/  
-        // [-]. Range SecondaryOutput value for maped controller output. **Hint: 0 value is equal to disable
+        
+        /**
+         * #### Param #24
+         * @brief Range SecondaryOutput value for maped controller output.
+         * @note - Value 0 means Disabled.
+         */
         float SECON_RANGE;         
         
-        // /*25*/  
-        // [-]. Controller direction polarity. normal direction:0, reverse direction:1
+        /**
+         * #### Param #25
+         * @brief Controller direction polarity. normal direction:0, reverse direction:1
+         */
         uint8_t DIR_POL;           
     };
 
-    // Full parameters struct for simple DualDrive AngleController without equalizer.
+    /**
+     * @struct DualDriveParams
+     * @brief Full parameters struct for simple DualDrive AngleController without equalizer.
+     */
     struct DualDriveParams
     {
-        // Basic parameters of SingleDriveParams
+        /**
+         * @brief Basic parameters of SingleDriveParams.
+         */
         SingleDriveParams basicParams;
 
-        // [-]. BIAS magnitude value for primaryOutput bias.
+        /**
+         * @brief BIAS magnitude value for primaryOutput bias. [-]
+         */
         float BIAS;                         
 
-        // [-]. Controller direction polarity for slave driver. normal direction:0, reverse direction:1
+        /**
+         * @brief Controller direction polarity for slave driver. normal direction:0, reverse direction:1
+         */
         uint8_t SLAVE_DIR_POL;              
     };
 
-    // Full parameters struct for advanced DualDrive AngleController with equalizer.
+    /**
+     * @struct DualDriveEqParams
+     * @brief Full parameters struct for advanced DualDrive AngleController with equalizer.
+     */
     struct DualDriveEqParams
     {
-        // Basic parameters of SingleDriveParams
+        /**
+         * @brief Basic parameters of SingleDriveParams
+         */
         SingleDriveParams basicParams;      
 
-        // [-]. BIAS magnitude value for primaryOutput bias.
+        /**
+         * @brief BIAS magnitude value for primaryOutput bias. [-]
+         */
         float BIAS;              
 
-        // [-]. Rate controller P gain for equalization           
+        /** 
+         * @brief Rate controller P gain for equalization. [-]
+         */       
         float RAT_EQ_P;          
 
-        // [-]. Rate controller I gain for equalization           
+        /**
+         * @brief Rate controller I gain for equalization. [-]
+         */         
         float RAT_EQ_I;             
 
-        // [-]. Rate controller D gain for equalization        
+        /**
+         * Rate controller D gain for equalization. [-]
+         */    
         float RAT_EQ_D;      
 
-         // [-]. Max integral control output for equalization controller output. Hint: 0 Value is equal to Disable.               
+        /**
+         * @brief Max integral control output for equalization controller output. [-]
+         * @note - 0 Value is equal to Disable.
+         */            
         float RAT_EQ_IMAX;  
 
-        // [Hz]. Lowpass filter frequency for derivative of rate for equalization. **Hint: 0 value is equal to disable.               
+        /**
+         * @brief Lowpass filter frequency for derivative of rate for equalization.
+         * @note - 0 value is equal to disable. 
+         */            
         float FLTDQ;     
 
-        // [-]. Controller direction polarity for slave driver. normal direction:0, reverse direction:1                   
+        /**
+         * @brief Controller direction polarity for slave driver. normal direction:0, reverse direction:1 
+         */             
         uint8_t SLAVE_DIR_POL;              
     };
 
-    // Full input variables for AngleController 
+    /**
+     * @struct Inputs
+     * @brief Full input variables for AngleController
+     */
     struct Inputs
     {
-        float ang;                          // [deg]. Angle value of plant.
-        float rat_1;                        // [deg/s]. First rate observer value of plant.
-        float rat_2;                        // [deg/s]. Second rate observer value of plant.
-        float angDes;                       // [deg]. Desired angle value for controller. 
-        float ratDes;                       // [deg/s]. Desired rate value for controller.
+        float ang;                          ///< [deg]. Angle value of plant.
+        float rat_1;                        ///< [deg/s]. Rate observer value of plant from master driver.
+        float rat_2;                        ///< [deg/s]. Rate observer value of plant from slave driver.
+        float angDes;                       ///< [deg]. Desired angle value for controller. 
+        float ratDes;                       ///< [deg/s]. Desired rate value for controller.
     };
 
-    // Full output variables for AngleController
+    /**
+     * @struct Outputs
+     * @brief Data structure for output values of any controllers.
+     */
     struct Outputs
     {
-        float primaryOutput;                // [-]. primaryOutput value output from AngleController.
-        float secondaryOutput;              // [-]. secondaryOutput value output from AngleController. Depends on primaryOutput value.
-        int8_t dir;                         // [-]. Direction signal value output from AngleController. {-1, 0, 1}
+        float primaryOutput;                ///< [-]. primaryOutput value output from AngleController.
+        float secondaryOutput;              ///< [-]. secondaryOutput value output from AngleController. Depends on primaryOutput value.
+        int8_t dir;                         ///< [-]. Direction signal value output from AngleController. {-1, 0, 1}
     };
 }
 
@@ -286,7 +394,7 @@ namespace AngleControllerNamespace
 namespace AngleControllerNamespace
 {
     /** 
-     * General upper limit function.
+     * @brief General upper limit function.
      * @param input: input data.
      * @param upLimit: up limitation value.
      * @return Limited value. 
@@ -294,7 +402,7 @@ namespace AngleControllerNamespace
     float limitUp(const float &input, const float &upLimit);
 
     /** 
-     * General lower limit function.
+     * @brief General lower limit function.
      * @param input: input data.
      * @param downLimit: down limitation value.
      * @return Limited value. 
@@ -302,7 +410,7 @@ namespace AngleControllerNamespace
     float limitDown(const float &input, const float &downLimit);
 
     /** 
-     * General limit function.
+     * @brief General limit function.
      * @param input: input data.
      * @param upLimit: up limitation value.
      * @param downLimit: down limitation value.
@@ -311,7 +419,7 @@ namespace AngleControllerNamespace
     float limit(const float &input, const float &upLimit, const float &downLimit);
 
     /** 
-     * General limit function.
+     * @brief General limit function.
      * @param input: input data.
      * @param limit: up/down limitation value. up_limit = +abs(limit), down_limit = -abs(limit).
      * @return Limited value. 
@@ -326,11 +434,17 @@ namespace AngleControllerNamespace
 
 namespace AngleControllerNamespace
 {
-    // Limit for slew rate class. 
+    /**
+     * @class LimitSlewRate
+     * @brief Limit for slew rate class.
+     */
     class LimitSlewRate
     {
         public:
 
+            /**
+             * @brief Default constructor. Init values and parameters.
+             */
             LimitSlewRate()
             {   
                 _input = 0;
@@ -342,14 +456,14 @@ namespace AngleControllerNamespace
             float output;                           
 
             /**
-             * Set slew rate parameter value.
+             * @brief Set slew rate parameter value.
              * @param vlaue: must be positive.
              * @return true if successed.
              */
             bool setLimit(float value);
 
             /**
-             * Update output value of slew rate limit object.
+             * @brief Update output value of slew rate limit object.
              * @param input: new value.
              * @param dt: [sec]. Time step duration for update.
              * @return output of limitation.
@@ -357,26 +471,34 @@ namespace AngleControllerNamespace
             float updateByTime(const float &input, const float &dt);
 
             /**
-             * Update output value of slew rate limit object.
+             * @brief Update output value of slew rate limit object.
              * @param input: new value.
              * @param frq: [Hz]. Frequency updatation.
              * @return output of limitation.
              */
             float updateByFrequency(const float &input, const float &frq);
 
-            // Clear any buffer on variables.
+            /**
+             * @brief Clear any buffer on variables.
+             */
             void clear(void); 
         
         private:
 
-            // Buffer for input of slewRate value that used in update method.
+            /**
+             * @brief Buffer for input of slewRate value that used in update method.
+             */
             float _input;     
 
-            // slew rate parameter value. *Hint: 0 value means disable it.
+            /**
+             * @brief Slew rate parameter value. *Hint: 0 value means disable it.
+             */
             float SLEWRATE;        
 
-            // calculate and update limited output by input signal and derivative of input signal.
-            void _calculate(const float &input, const float &derivative);
+            /**
+             * @brief Calculate and update limited output by input signal and derivative of input signal.
+             */
+            void _calculate(const float &input, const float &derivative, const float &frq);
     };
 }
 // #######################################################################################
@@ -384,24 +506,34 @@ namespace AngleControllerNamespace
 
 namespace AngleControllerNamespace
 {
-    // Low pass filter class
+    /**
+     * @class LPF
+     * @brief Low pass filter class
+     */
     class LPF
     {
         public:
             
+            /**
+             * @brief Parameters structure.
+             */
             struct LPF_Parameters
             {
                 float FRQ;                   // [Hz]. Cut off frequency parameter of low pass filter. *Hint: 0 value means disable filter.
             }parameters;
 
-            // Default constructor. Init some variables.
+            /**
+             * @brief Default constructor. Init some variables.
+             */
             LPF();
 
-            // Buffer memory for output of lowpass filter.
+            /**
+             * @brief Buffer memory for output of lowpass filter.
+             */
             float output;              
 
             /**
-             * Low pass filter updatation. Calculate output signal relative to input signal and time step.
+             * @brief Low pass filter updatation. Calculate output signal relative to input signal and time step.
              * Store value of filtered output signal.
              * @param input: Value of input signal.
              * @param dt: Time step duration. [sec].
@@ -410,7 +542,7 @@ namespace AngleControllerNamespace
             virtual float updateByTime(const float &input, const float &dt);
 
             /**
-             * Low pass filter updatation. Calculate output signal relative to input signal and frequency of update step.
+             * @brief Low pass filter updatation. Calculate output signal relative to input signal and frequency of update step.
              * Store value of filtered output signal.
              * @param input: Value of input signal.
              * @param frq: Frequency updatation step. [Hz].
@@ -419,37 +551,42 @@ namespace AngleControllerNamespace
             virtual float updateByFrequency(const float &input, const float &frq);
 
             /**
-             * Set Cut off frequency of low pass filter.
+             * @brief Set Cut off frequency of low pass filter.
              * @param frq: Cut off frequency. [Hz]
              * @return true if successed.
              *  */  
             bool setFrequency(const float &frq);
 
             /**
-             * Set output directely without filter.
+             * @brief Set output directely without filter.
              * Use this function for init value of output signal.
              */
             void setOutputDirect(const float &data);
 
-            // Clear any buffer on variables.
+            /**
+             * @brief Clear any buffer on variables.
+             */
             void clear(void); 
 
         protected:
 
             /**
-             * Low Pass filter gain:
-             * Filter in continuse space: G(s) = output/input = 1/(T*s + 1)
-             * T: Time constant for lowpass filter.
-             * Filter cut off frequency (frq_c) = 1/(2pi*T)
-             * alpha gain = 1/( 1 + 1/(dt/T) ) = 1/( 1 + 1/(2*pi*frq_c*dt) )
-             * dt: Time step duration. [sec]
-             * output_(n) = (1 - alpha) * output_(n-1) + alpha * input_(n)
+             * @brief Low Pass filter gain.
+             * @note - Filter in continuse space: G(s) = output/input = 1/(T*s + 1)
+             * @note - T: Time constant for lowpass filter.
+             * @note -  Filter cut off frequency (frq_c) = 1/(2pi*T)
+             * @note -  alpha gain = 1/( 1 + 1/(dt/T) ) = 1/( 1 + 1/(2*pi*frq_c*dt) )
+             * @note -  dt: Time step duration. [sec]
+             * @note -  output_(n) = (1 - alpha) * output_(n-1) + alpha * input_(n)
              *  */ 
             float _alpha;           
 
     };
 
-    // Low pass filter class with input limitation
+    /**
+     * @class LPFLimit
+     * @brief Low pass filter class with input limitation
+     */
     class LPFLimit: public LPF
     {
         public:
@@ -462,11 +599,13 @@ namespace AngleControllerNamespace
                 float DOWN_LIMIT;           // Input down limit value.
             }parameters;
 
-            // Default constructor. Init some varibles.
+            /**
+             * @brief Default constructor. Init some varibles.
+             */
             LPFLimit();
 
             /**
-             * Low pass filter updatation. Calculate output signal relative to input signal and time step.
+             * @brief Low pass filter updatation. Calculate output signal relative to input signal and time step.
              * Store value of filtered output signal.
              * @param input: Value of input signal.
              * @param dt: Time step duration. [sec].
@@ -475,7 +614,7 @@ namespace AngleControllerNamespace
             virtual float updateByTime(const float &input, const float &dt) override;
 
             /**
-             * Low pass filter updatation. Calculate output signal relative to input signal and frequency of update step.
+             * @brief Low pass filter updatation. Calculate output signal relative to input signal and frequency of update step.
              * Store value of filtered output signal.
              * @param input: Value of input signal.
              * @param frq: Time step duration. [Hz].
@@ -484,13 +623,13 @@ namespace AngleControllerNamespace
             virtual float updateByFrequency(const float &input, const float &frq) override;
 
             /** 
-             * Set input limitation values.
+             * @brief Set input limitation values.
              * @param limit: up/down limitation value. up_limit = +abs(limit), down_limit = -abs(limit).
             */   
             void setInputLimit(float limit);
 
             /** 
-             * Set input limitation values.
+             * @brief Set input limitation values.
              * @param upLimit: up limitation value.
              * @param downLimit: down limitation value.
             */ 
@@ -499,7 +638,7 @@ namespace AngleControllerNamespace
         private:
 
             /**
-             * Limit input data.
+             * @brief Limit input data.
              * @return Limited value.
              */
             float _limitInput(const float &input);
@@ -512,17 +651,23 @@ namespace AngleControllerNamespace
 
 namespace AngleControllerNamespace
 {
-
+    /**
+     * @class PController
+     * @brief General P controller class for any higher level controller.
+     */
     class PController
     {
         public:
 
-            // Last error for controller.
+            /// @brief Last error for controller.
             std::string errorMessage;
 
-            // Output signal value of controller. [output_unit]
+            /// @brief Output signal value of controller. [output_unit]
             float output;          
 
+            /**
+             * @brief Parameters structure.
+             */
             struct PController_Parameters
             {
                 // [-]. P or proportional gain. It must be positive.
@@ -535,46 +680,54 @@ namespace AngleControllerNamespace
                 float FFMAX;        
             }parameters;
 
-            // Default constructor. Init some variables.
+            /**
+             * @brief Default constructor. Init some variables.
+             */
             PController();
 
-            // Get output data signal from controller.
+            /**
+             * @brief Get output data signal from controller.
+             */
             float getOutput(void);
 
-            // Return controller error value. e = desiredState - state.
+            /**
+             * @brief Return controller error value. e = desiredState - state.
+             */
             float getError(void);
 
             // ------------------------------------------
             // Virtual functions:
 
             /**
-             * Update and calculate output signal of controller.
+             * @brief Update and calculate output signal of controller.
              * @param desiredState: Desired state for controller.
              * @param state: Feedback state from plant system.
              * @return output value of controller.
              */
             virtual float update(const float &desiredState, const float &state);
 
-            /* 
-                Check params for valid values.
-                Calculate some variavles depends on other Parameters.
-                Clear any buffer.
-                @return true if successed.
-            */
+            /**
+             * @brief Check params for valid values.
+             * Calculate some variavles depends on other Parameters.
+             * Clear any buffer.
+             * @return true if successed.
+             */
             virtual bool init(void); 
 
-            // Clear any buffer on variables.
+            /**
+             * @brief Clear any buffer on variables.
+             */
             virtual void clear(void); 
 
         protected:
 
-            // [Input_unit]. Input error signal value. _e = desiredState - state;        
+            /// @brief [Input_unit]. Input error signal value. _e = desiredState - state;        
             float _e;       
 
         private:
 
             /**
-             * Check params for valid values.
+             * @brief Check params for valid values.
              * @return true if successed.
              *  */ 
             bool _checkParams(void);
@@ -582,10 +735,17 @@ namespace AngleControllerNamespace
 
     // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
+    /**
+     * @class PIController
+     * @brief General PI controller class for any higher level controller.
+     */
     class PIController : public PController
     {
         public:
 
+            /**
+             * @brief Parameters structure.
+             */
             struct PIController_Parameters : public PController_Parameters
             {
                 // [-]. I gain for integral controller. It must be positive.
@@ -595,7 +755,9 @@ namespace AngleControllerNamespace
                 float IMAX;             
             }parameters;
 
-            // Default constructor. Init some variables.
+            /**
+             * @brief Default constructor. Init some variables.
+             */
             PIController();
 
             // ------------------------------------------
@@ -646,6 +808,10 @@ namespace AngleControllerNamespace
 
     // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
+    /**
+     * @class PIDController
+     * @brief General PID controller class for any higher level controller.
+     */
     class PIDController : public PIController
     {
         public:
@@ -696,8 +862,8 @@ namespace AngleControllerNamespace
 
         protected:
 
-            AngleControllerNamespace::LPF _LPFD;     // LPF object for low pass filter of derivative controller.
-            float _ePast;                            // buffer memory for past error.
+            AngleControllerNamespace::LPF _LPFD;          // LPF object for low pass filter of derivative controller.
+            float _ePast;                                 // buffer memory for past error.
 
         private:
 
@@ -715,37 +881,64 @@ namespace AngleControllerNamespace
 
 namespace AngleControllerNamespace
 {
+    /**
+     * @class MAP
+     * @brief Map class for convert outputs of any controller signals to custom acceptabe values.
+     */
     class MAP
     {
         public:
 
+            /**
+             * @brief Last error accured for object.
+             */
             std::string errorMessage;
             
-            AngleControllerNamespace::Outputs outputs;       // Output object
+            /**
+             * @brief Data structure for output values of mapping signal controller.
+             */
+            AngleControllerNamespace::Outputs outputs;     
 
             // -------------------------
             // MAP parameters:
 
-            struct MAP_Parameters
+            /**
+             * @struct ParametersStructure
+             * @brief Data structure for parameters of MAP object.
+             */
+            struct ParametersStructure
             {
-                // PrimaryOutput deadzone value.
+                /**
+                 * @brief PrimaryOutput deadzone value.
+                 */
                 float PRIM_DEADZONE;
 
-                // PrimaryOutput max limitation value.
+                /**
+                 * @brief PrimaryOutput max limitation value.
+                 */
                 float PRIM_MAX;
 
-                // PrimaryOutput range for set map scale.
+                /**
+                 * @brief PrimaryOutput range for set map scale.
+                 */
                 float PRIM_RANGE;
 
-                // SecondaryOutput range for set map scale.
+                /**
+                 * @brief SecondaryOutput range for set map scale.
+                 */
                 float SECON_RANGE;
 
-                // Output polarity of mapping. 0: normal, 1: reverse.
+                /**
+                 * @brief Output polarity of mapping. 0: normal, 1: reverse.
+                 */
                 uint8_t DIR_POL;
             }parameters;
 
             // -------------------------
 
+            /**
+             * @brief Default Constructor. Initial parameters and vriables by default values.
+             */
             MAP()
             {
                 parameters.DIR_POL = 0;
@@ -760,35 +953,42 @@ namespace AngleControllerNamespace
                 clear();
             }
 
-            /**  
-                Check params for valid values.
-                Calculate some variavles depends on other Parameters.
-                Clear any buffer.
-                @return true if successed.
-            */
+            /**
+             * @brief Check params for valid values.
+             * Calculate some variavles depends on other Parameters.
+             * Clear any buffer.
+             * @return true if successed.
+             */
             bool init(void);
 
             /**
-             * Update output value of map.
+             * @brief Update output value of map.
              * @param input: output signal from controller. 
              * @return outputs object of the map.
              */
             AngleControllerNamespace::Outputs update(const float &input);
 
-            // Clear any buffer on variables.
+            /**
+             * @brief Clear any buffer on variables.
+             */
             void clear(void);
 
         private:
 
-            // Slope of line for primary input/output mapping.
+            /**
+             * @brief Slope of line for primary input/output mapping.
+             */
             float _m_map;
 
-            // Positive vlaue depends on output polarity.
-            // Output polarity 0 -> _positiveDir = 1; Output polarity 1 -> _positiveDir = -1; 
+            /**
+             * @brief Positive vlaue depends on output polarity.
+             * @note - Output polarity 0 -> _positiveDir = 1
+             * @note - Output polarity 1 -> _positiveDir = -1;
+             */
             int8_t _positiveDir;
 
             /**
-             * Check params for valid values.
+             * @brief Check params for valid values.
              * @return true if successed.
              *  */ 
             bool _checkParams(void);
@@ -798,6 +998,10 @@ namespace AngleControllerNamespace
 // #######################################################################################
 // AngleController_SingleDrive class:
 
+/**
+ * @class AngleController_SingleDrive
+ * @brief Controller class for single drive system.
+ */
 class AngleController_SingleDrive
 {
     public:
@@ -807,9 +1011,6 @@ class AngleController_SingleDrive
 
         // Outputs struct
         AngleControllerNamespace::Outputs outputs;
-
-        // Inputs struct
-        AngleControllerNamespace::Inputs inputs;
 
         // Last error for object.
         std::string errorMessage;
@@ -882,6 +1083,9 @@ class AngleController_SingleDrive
         // Controller mode. 0:Angle, 1:Rate.
         uint8_t _mode; 
 
+        // Inputs struct
+        AngleControllerNamespace::Inputs _inputs;
+
         // Map object for controller output mapping.
         AngleControllerNamespace::MAP _map; 
 
@@ -902,64 +1106,84 @@ class AngleController_SingleDrive
 // #######################################################################################
 // AngleController_DualDriveEq class:
 
+/**
+ * @class AngleController_DualDriveEq
+ * @brief Controller class for dual drive (with equalizer) system.
+ */
 class AngleController_DualDriveEq : public AngleController_SingleDrive
 {
     public:
 
-        // parameter struct
+        /**
+         * @brief Data structure for dual drive (with equalizer) controller parameters. 
+         */
         AngleControllerNamespace::DualDriveEqParams parameters;  
 
-        // Outputs struct of slave
+        /**
+         * @brief Data structure for output values of slave driver.
+         */
         AngleControllerNamespace::Outputs outputsSlave;
 
-        /*
-            Constructor. Init parameters by default values.
-        */
+        /**
+         * @brief Default Constructor. Initial parameters and variables by default values.
+         */
         AngleController_DualDriveEq();
 
-        // Check certain params for allowablw values.
-        // @return true if successed.
-        bool checkParams(const AngleControllerNamespace::DualDriveEqParams &params);
+        /**
+         * @brief Check certain params for allowable values.
+         * @return true if successed.
+         */
+        bool checkParams(const AngleControllerNamespace::DualDriveEqParams &data);
 
+        /**
+         * @brief Get method for return parameters value.
+         */
+        void getParams(AngleControllerNamespace::DualDriveEqParams *data);
 
-        // Get method for return parameters value:
-        void getParams(AngleControllerNamespace::DualDriveEqParams *params);
-                                                         
-        // Set method for parameters value.
-        bool setParams(const AngleControllerNamespace::DualDriveEqParams &parameters);
+        /**
+         * @brief Set method for parameters value.
+         * @return true if successed.
+         *  */                                                 
+        bool setParams(const AngleControllerNamespace::DualDriveEqParams &data);
 
         // -------------------------------------------
         // Virtual functions:
 
-        /* 
-            Check params for allowable values.
-            Calculate some variavles depends on other Parameters.
-            @return true if successed.
-        */
+        /**
+         * @brief Initial controller. Check parameters value.
+         * Calculate some variables depends on other Parameters.
+         * @return true if successed.
+         */
         virtual bool init(void) override;  
 
-        /** 
-            Update controller outputs.
-            @param T_now: Time at the update moment. [us]
-            @return true if successed.
-        */
+        /**
+         * @brief Update controller outputs.
+         * @param T_now: Time at the update moment. [us]
+         * @return true if successed.
+         */
         virtual bool update(const uint64_t &T_now) override; 
 
-        // Clear any buffer date on variables.
+        /**
+         * @brief Clear any buffer date on variables.
+         */
         virtual void clear(void) override;      
 
     protected:
 
-        // Map object for controller output mapping for slave driver.
+        /**
+         * @brief Map object for controller output mapping for slave driver.
+         */
         AngleControllerNamespace::MAP _mapSlave; 
 
-        // PID controller object for rate control for slave driver.
+        /**
+         * @brief PID controller object for rate control for slave driver.
+         */
         AngleControllerNamespace::PIDController _PIDRateSlave;
 
-        // PID controller object for rate control for equalizer.
+        /**
+         * @brief PID controller object for rate control for equalizer.
+         */
         AngleControllerNamespace::PIDController _PIDEq;
-
 };
-
 
 #endif
