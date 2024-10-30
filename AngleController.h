@@ -109,8 +109,16 @@ Rate_des[deg/s]->Limit->Lowpass_Filter(FLTT)->SlewRateLimit->|-Rate1->|Integral_
 // #####################################################
 // AngleController essential struct variables:
 
+/**
+ * @namespace AngleControllerNamespace
+ */
 namespace AngleControllerNamespace
 {
+    /**
+     * @defgroup AngleController_Essential_Structure_Variables AngleController Essential Structure Variables
+     * @{
+     */
+
     /**
      * @struct SingleDriveParams
      * @brief Full parameters struct for SingleDrive AngleController
@@ -386,13 +394,24 @@ namespace AngleControllerNamespace
         float secondaryOutput;              ///< [-]. secondaryOutput value output from AngleController. Depends on primaryOutput value.
         int8_t dir;                         ///< [-]. Direction signal value output from AngleController. {-1, 0, 1}
     };
+
+/** @} */  // end of AngleController_Essential_Structs
+
 }
 
 // ##################################################################################
 // General Functions:
 
+/**
+ * @namespace AngleControllerNamespace
+ */
 namespace AngleControllerNamespace
 {
+    /**
+     * @defgroup AngleController_General_Functions AngleController_General_Functions
+     * @{
+     */
+
     /** 
      * @brief General upper limit function.
      * @param input: input data.
@@ -426,17 +445,27 @@ namespace AngleControllerNamespace
     */         
     float limit(const float &input, const float &limit);
 
+    /** @} */  // end of AngleController_General_Functions
+
 }
 
 // #######################################################################################
 // LimitSlewRate class:
 // This class is for change rate limit.
 
+/**
+ * @defgroup AngleController_Special_classes  AngleController Special classes
+ */
+
+/**
+ * @namespace AngleControllerNamespace
+ */
 namespace AngleControllerNamespace
 {
     /**
      * @class LimitSlewRate
-     * @brief Limit for slew rate class.
+     * @ingroup AngleController_Special_classes
+     * @brief Limit for slew rate class.  
      */
     class LimitSlewRate
     {
@@ -508,6 +537,7 @@ namespace AngleControllerNamespace
 {
     /**
      * @class LPF
+     * @ingroup AngleController_Special_classes
      * @brief Low pass filter class
      */
     class LPF
@@ -585,6 +615,7 @@ namespace AngleControllerNamespace
 
     /**
      * @class LPFLimit
+     * @ingroup AngleController_Special_classes
      * @brief Low pass filter class with input limitation
      */
     class LPFLimit: public LPF
@@ -653,6 +684,7 @@ namespace AngleControllerNamespace
 {
     /**
      * @class PController
+     * @ingroup AngleController_Special_classes
      * @brief General P controller class for any higher level controller.
      */
     class PController
@@ -737,6 +769,7 @@ namespace AngleControllerNamespace
 
     /**
      * @class PIController
+     * @ingroup AngleController_Special_classes
      * @brief General PI controller class for any higher level controller.
      */
     class PIController : public PController
@@ -810,6 +843,7 @@ namespace AngleControllerNamespace
 
     /**
      * @class PIDController
+     * @ingroup AngleController_Special_classes
      * @brief General PID controller class for any higher level controller.
      */
     class PIDController : public PIController
@@ -883,6 +917,7 @@ namespace AngleControllerNamespace
 {
     /**
      * @class MAP
+     * @ingroup AngleController_Special_classes
      * @brief Map class for convert outputs of any controller signals to custom acceptabe values.
      */
     class MAP
@@ -999,7 +1034,12 @@ namespace AngleControllerNamespace
 // AngleController_SingleDrive class:
 
 /**
+ * @defgroup AngleController_Public_Classes  AngleController Public Classes
+ */
+
+/**
  * @class AngleController_SingleDrive
+ * @ingroup AngleController_Public_Classes
  * @brief Controller class for single drive system.
  */
 class AngleController_SingleDrive
@@ -1108,6 +1148,7 @@ class AngleController_SingleDrive
 
 /**
  * @class AngleController_DualDriveEq
+ * @ingroup AngleController_Public_Classes
  * @brief Controller class for dual drive (with equalizer) system.
  */
 class AngleController_DualDriveEq : public AngleController_SingleDrive

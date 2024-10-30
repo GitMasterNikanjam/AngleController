@@ -704,7 +704,7 @@ AngleController_SingleDrive::AngleController_SingleDrive(void)
     /*20*/  parameters.UPDATE_MODE = 0;
     /*21*/  parameters.PRIM_DEADZONE = 0;  
     /*22*/  parameters.PRIM_MAX = 0;  
-    /*23*/  parameters.PRIM_RANGE = 100;          
+    /*23*/  parameters.PRIM_RANGE = 0;          
     /*24*/  parameters.SECON_RANGE = 0;          
     /*25*/  parameters.DIR_POL = 0; 
 
@@ -815,12 +815,13 @@ bool AngleController_SingleDrive::checkParams(const AngleControllerNamespace::Si
                       (params.PRIM_RANGE >= 0) && 
                       (params.SECON_RANGE >= 0);                   
 
+    
     if(!param_cond)
     {
         errorMessage = "Error AngleController: one or some parameters have not correct value.";
         return false;
     }
-
+    
     if(params.PRIM_RANGE > 0)
     {
         if(params.PRIM_MAX > params.PRIM_RANGE)
@@ -1076,7 +1077,7 @@ bool AngleController_DualDriveEq::setParams(const AngleControllerNamespace::Dual
     {
         return false;
     }
-
+    
     parameters = data;
 
     return true;
@@ -1091,7 +1092,12 @@ bool AngleController_DualDriveEq::checkParams(const AngleControllerNamespace::Du
 {
 
     bool param_cond = AngleController_SingleDrive::checkParams(data.basicParams);
-
+    
+    if(!param_cond)
+    {
+        return false;
+    }
+    
     param_cond = param_cond && (data.BIAS >= 0) && (data.FLTDQ >= 0) && (data.RAT_EQ_D >= 0) &&
                                (data.RAT_EQ_I >= 0) && (data.RAT_EQ_IMAX >= 0) && (data.RAT_EQ_P >= 0);
 
@@ -1101,7 +1107,7 @@ bool AngleController_DualDriveEq::checkParams(const AngleControllerNamespace::Du
         return false;
     }
 
-    return param_cond;
+    return true;
 }
 
 bool AngleController_DualDriveEq::init(void)
