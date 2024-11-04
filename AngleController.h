@@ -1,6 +1,18 @@
 #ifndef ANGLE_CONTROLLER_H
 #define ANGLE_CONTROLLER_H
 
+/**
+ * @defgroup AngleController_Essential_Structure_Variables AngleController Essential Structure Variables
+ */
+
+/**
+ * @defgroup AngleController_General_Functions AngleController General Functions
+ */
+
+/**
+ * @defgroup AngleController_Classes  AngleController classes
+ */
+
 // ########################################################
 // Include libraries:
 
@@ -10,6 +22,7 @@
 
 using namespace std;
 // ######################################################
+
 // AngleController_SingleDrive(Mode:Angle): Controller Shematic:  
 
 /* 
@@ -115,16 +128,17 @@ Rate_des[deg/s]->Limit->Lowpass_Filter(FLTT)->SlewRateLimit->|-Rate1->|Integral_
 namespace AngleControllerNamespace
 {
     /**
-     * @defgroup AngleController_Essential_Structure_Variables AngleController Essential Structure Variables
-     * @{
-     */
-
-    /**
      * @struct SingleDriveParams
      * @brief Full parameters struct for SingleDrive AngleController
+     * @ingroup AngleController_Essential_Structure_Variables
      */
     struct SingleDriveParams
     {
+        /**
+         * @brief Default constructor. Init parameters value to default.
+         */
+        SingleDriveParams();
+        
         /**
          * #### Param #1
          * @brief Angle controller P gain. [-]
@@ -303,9 +317,15 @@ namespace AngleControllerNamespace
     /**
      * @struct DualDriveParams
      * @brief Full parameters struct for simple DualDrive AngleController without equalizer.
+     * @ingroup AngleController_Essential_Structure_Variables
      */
     struct DualDriveParams
     {
+        /**
+         * @brief Default constructor. Init parameters value to default.
+         */
+        DualDriveParams();
+
         /**
          * @brief Basic parameters of SingleDriveParams.
          */
@@ -325,9 +345,15 @@ namespace AngleControllerNamespace
     /**
      * @struct DualDriveEqParams
      * @brief Full parameters struct for advanced DualDrive AngleController with equalizer.
+     * @ingroup AngleController_Essential_Structure_Variables
      */
     struct DualDriveEqParams
     {
+        /**
+         * @brief Default constructor. Init parameters value to default.
+         */
+        DualDriveEqParams();
+
         /**
          * @brief Basic parameters of SingleDriveParams
          */
@@ -374,28 +400,38 @@ namespace AngleControllerNamespace
     /**
      * @struct Inputs
      * @brief Full input variables for AngleController
+     * @ingroup AngleController_Essential_Structure_Variables
      */
     struct Inputs
     {
-        float ang;                          ///< [deg]. Angle value of plant.
-        float rat_1;                        ///< [deg/s]. Rate observer value of plant from master driver.
-        float rat_2;                        ///< [deg/s]. Rate observer value of plant from slave driver.
-        float angDes;                       ///< [deg]. Desired angle value for controller. 
-        float ratDes;                       ///< [deg/s]. Desired rate value for controller.
+        /**
+         * @brief Default constructor. Init variables value to default.
+         */
+        Inputs();
+
+        float angle;                          ///< [deg]. Angle value of plant.
+        float rateMaster;                     ///< [deg/s]. Rate observer value of plant from master driver.
+        float rateSlave;                      ///< [deg/s]. Rate observer value of plant from slave driver.
+        float angleDes;                       ///< [deg]. Desired angle value for controller. 
+        float rateDes;                        ///< [deg/s]. Desired rate value for controller.
     };
 
     /**
      * @struct Outputs
      * @brief Data structure for output values of any controllers.
+     * @ingroup AngleController_Essential_Structure_Variables
      */
     struct Outputs
     {
+        /**
+         * @brief Default constructor. Init variables value to default.
+         */
+        Outputs();
+
         float primaryOutput;                ///< [-]. primaryOutput value output from AngleController.
         float secondaryOutput;              ///< [-]. secondaryOutput value output from AngleController. Depends on primaryOutput value.
         int8_t dir;                         ///< [-]. Direction signal value output from AngleController. {-1, 0, 1}
     };
-
-/** @} */  // end of AngleController_Essential_Structs
 
 }
 
@@ -407,13 +443,9 @@ namespace AngleControllerNamespace
  */
 namespace AngleControllerNamespace
 {
-    /**
-     * @defgroup AngleController_General_Functions AngleController_General_Functions
-     * @{
-     */
-
     /** 
      * @brief General upper limit function.
+     * @ingroup AngleController_General_Functions
      * @param input: input data.
      * @param upLimit: up limitation value.
      * @return Limited value. 
@@ -422,6 +454,7 @@ namespace AngleControllerNamespace
 
     /** 
      * @brief General lower limit function.
+     * @ingroup AngleController_General_Functions
      * @param input: input data.
      * @param downLimit: down limitation value.
      * @return Limited value. 
@@ -430,6 +463,7 @@ namespace AngleControllerNamespace
 
     /** 
      * @brief General limit function.
+     * @ingroup AngleController_General_Functions
      * @param input: input data.
      * @param upLimit: up limitation value.
      * @param downLimit: down limitation value.
@@ -439,13 +473,12 @@ namespace AngleControllerNamespace
 
     /** 
      * @brief General limit function.
+     * @ingroup AngleController_General_Functions
      * @param input: input data.
      * @param limit: up/down limitation value. up_limit = +abs(limit), down_limit = -abs(limit).
      * @return Limited value. 
     */         
     float limit(const float &input, const float &limit);
-
-    /** @} */  // end of AngleController_General_Functions
 
 }
 
@@ -454,17 +487,13 @@ namespace AngleControllerNamespace
 // This class is for change rate limit.
 
 /**
- * @defgroup AngleController_Special_classes  AngleController Special classes
- */
-
-/**
  * @namespace AngleControllerNamespace
  */
 namespace AngleControllerNamespace
 {
     /**
      * @class LimitSlewRate
-     * @ingroup AngleController_Special_classes
+     * @ingroup AngleController_Classes
      * @brief Limit for slew rate class.  
      */
     class LimitSlewRate
@@ -537,7 +566,7 @@ namespace AngleControllerNamespace
 {
     /**
      * @class LPF
-     * @ingroup AngleController_Special_classes
+     * @ingroup AngleController_Classes
      * @brief Low pass filter class
      */
     class LPF
@@ -615,7 +644,7 @@ namespace AngleControllerNamespace
 
     /**
      * @class LPFLimit
-     * @ingroup AngleController_Special_classes
+     * @ingroup AngleController_Classes
      * @brief Low pass filter class with input limitation
      */
     class LPFLimit: public LPF
@@ -684,7 +713,7 @@ namespace AngleControllerNamespace
 {
     /**
      * @class PController
-     * @ingroup AngleController_Special_classes
+     * @ingroup AngleController_Classes
      * @brief General P controller class for any higher level controller.
      */
     class PController
@@ -769,7 +798,7 @@ namespace AngleControllerNamespace
 
     /**
      * @class PIController
-     * @ingroup AngleController_Special_classes
+     * @ingroup AngleController_Classes
      * @brief General PI controller class for any higher level controller.
      */
     class PIController : public PController
@@ -843,7 +872,7 @@ namespace AngleControllerNamespace
 
     /**
      * @class PIDController
-     * @ingroup AngleController_Special_classes
+     * @ingroup AngleController_Classes
      * @brief General PID controller class for any higher level controller.
      */
     class PIDController : public PIController
@@ -917,7 +946,7 @@ namespace AngleControllerNamespace
 {
     /**
      * @class MAP
-     * @ingroup AngleController_Special_classes
+     * @ingroup AngleController_Classes
      * @brief Map class for convert outputs of any controller signals to custom acceptabe values.
      */
     class MAP
@@ -1034,12 +1063,8 @@ namespace AngleControllerNamespace
 // AngleController_SingleDrive class:
 
 /**
- * @defgroup AngleController_Public_Classes  AngleController Public Classes
- */
-
-/**
  * @class AngleController_SingleDrive
- * @ingroup AngleController_Public_Classes
+ * @ingroup AngleController_Classes
  * @brief Controller class for single drive system.
  */
 class AngleController_SingleDrive
@@ -1060,15 +1085,8 @@ class AngleController_SingleDrive
         */
         AngleController_SingleDrive();
 
-        // Check certain params for allowable values.
-        // @return true if successed.
-        bool checkParams(const AngleControllerNamespace::SingleDriveParams &params);
-
         // Set controller mode. 0:Angle, 1:Rate.
         bool setMode(const uint8_t &mode);
-
-        // Set inputs data for controller.
-        void setInputs(const AngleControllerNamespace::Inputs &data);
         
         // Return instance frequency of update controller variable. It can changed by rate of call the update function.
         float getFrq(void);    
@@ -1076,8 +1094,7 @@ class AngleController_SingleDrive
         // Return controller error value. error_angle or error_rate depends on controller mode.
         float getError(void);  
 
-        // Set method for parameters value.
-        bool setParams(const AngleControllerNamespace::SingleDriveParams &parameters);
+        float getRateDemanded(void);
 
         // Get method for return parameters value:
         void getParams(AngleControllerNamespace::SingleDriveParams *params);
@@ -1100,7 +1117,13 @@ class AngleController_SingleDrive
         virtual bool update(const uint64_t &T_now);
 
         // Clear any buffer date on variables.
-        virtual void clear(void);      
+        virtual void clear(void);     
+
+        // Set inputs data for controller.
+        virtual void setInputs(const AngleControllerNamespace::Inputs &data); 
+
+        // Set method for parameters value.
+        bool setParams(const AngleControllerNamespace::SingleDriveParams &data);
 
     protected:
 
@@ -1109,6 +1132,8 @@ class AngleController_SingleDrive
 
         // Error rate of controller.
         float _eRate;
+
+        float _rateDemanded;
 
         // [Hz]. Measured controller Loop Frequency for update. Depends on executation of update function frequency. 
         float _frq;    
@@ -1141,6 +1166,10 @@ class AngleController_SingleDrive
         // Slew rate object for angle acceleration limitation.
         AngleControllerNamespace::LimitSlewRate _limitSlewRate;
 
+        // Check parameters for allowable values.
+        // @return true if successed.
+        bool _checkParameters(const AngleControllerNamespace::SingleDriveParams &data);
+
 };
 
 // #######################################################################################
@@ -1148,7 +1177,7 @@ class AngleController_SingleDrive
 
 /**
  * @class AngleController_DualDriveEq
- * @ingroup AngleController_Public_Classes
+ * @ingroup AngleController_Classes
  * @brief Controller class for dual drive (with equalizer) system.
  */
 class AngleController_DualDriveEq : public AngleController_SingleDrive
@@ -1171,12 +1200,6 @@ class AngleController_DualDriveEq : public AngleController_SingleDrive
         AngleController_DualDriveEq();
 
         /**
-         * @brief Check certain params for allowable values.
-         * @return true if successed.
-         */
-        bool checkParams(const AngleControllerNamespace::DualDriveEqParams &data);
-
-        /**
          * @brief Get method for return parameters value.
          */
         void getParams(AngleControllerNamespace::DualDriveEqParams *data);
@@ -1185,7 +1208,7 @@ class AngleController_DualDriveEq : public AngleController_SingleDrive
          * @brief Set method for parameters value.
          * @return true if successed.
          *  */                                                 
-        bool setParams(const AngleControllerNamespace::DualDriveEqParams &data);
+         bool setParams(const AngleControllerNamespace::DualDriveEqParams &data);
 
         // -------------------------------------------
         // Virtual functions:
@@ -1209,6 +1232,9 @@ class AngleController_DualDriveEq : public AngleController_SingleDrive
          */
         virtual void clear(void) override;      
 
+        // Set inputs data for controller.
+        virtual void setInputs(const AngleControllerNamespace::Inputs &data) override; 
+
     protected:
 
         /**
@@ -1225,6 +1251,12 @@ class AngleController_DualDriveEq : public AngleController_SingleDrive
          * @brief PID controller object for rate control for equalizer.
          */
         AngleControllerNamespace::PIDController _PIDEq;
+
+        /**
+         * @brief Check parameters for allowable values.
+         * @return true if successed.
+         */
+        bool _checkParameters(const AngleControllerNamespace::DualDriveEqParams &data);
 };
 
 #endif
