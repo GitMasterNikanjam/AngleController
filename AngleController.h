@@ -576,9 +576,10 @@ namespace AngleControllerNamespace
             /**
              * @brief Parameters structure.
              */
-            struct LPF_Parameters
+            struct ParametersStructure
             {
-                float FRQ;                   // [Hz]. Cut off frequency parameter of low pass filter. *Hint: 0 value means disable filter.
+                /// @brief Cut off frequency parameter of low pass filter. [Hz]. The value of 0 means it is disabled. 
+                float FRQ;                   
             }parameters;
 
             /**
@@ -651,7 +652,7 @@ namespace AngleControllerNamespace
     {
         public:
 
-            struct LPFLimit_Parameters : public LPF_Parameters
+            struct LPFLimit_Parameters : public ParametersStructure
             {
                 bool UP_LIMIT_EN;           // Input upper limitation enable/disable.
                 bool DOWN_LIMIT_EN;         // Input Down limitation enable/disable.
