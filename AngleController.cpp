@@ -724,7 +724,8 @@ void MAP::clear(void)
 }
 
 // ###############################################################################################
-
+// AngleController_SingleDrive Class:
+ 
 void AngleController_SingleDrive::clear(void)
 {
     outputs.dir = 0;
@@ -1069,7 +1070,7 @@ float AngleController_SingleDrive::getRateDemanded(void)
     return _rateDemanded;
 }
 
-// ###############################################################################
+// ############################################################################################
 
 AngleController_DualDriveEq::AngleController_DualDriveEq()
 {
