@@ -21,29 +21,39 @@
 #include <chrono>
 
 using namespace std;
-// ######################################################
 
-// AngleController_SingleDrive(Mode:Angle): Controller Shematic:  
+// ###############################################################################################
+// AngleController_SingleDrive(Mode:0:Direct): Controller Shematic:  
 
-/* 
-                                                                                                |->Limit(*FF2) ------------------------------------->|(+)|                                           |-> PrimaryOutput
-Limit(Rate_des[deg/s]*FF1)------------------>|(+)|                                              |       |*KP_rate ---------------------------------->|(+)|                                           |-> SecondaryOutput 
-(Limit(Angle_des[deg])-Angle[deg])*KP_angle->|(+)|->Limit->Lowpass_Filter(FLTT)->SlewRateLimit->|-Rate->|Integral_Limit(*KI_rate) ------------------>|(+)|->Limit->Lowpass_Filter(FLTO)->Map_Function|-> Direction
-                                                                                                        |Derivative(*KD_rate)->Lowpass_Filter(FLTD)->|(+)|                                           
+/**  
+*                                                      |-> PrimaryOutput
+*                                                      |-> SecondaryOutput 
+*   Throttel->Limit->Lowpass_Filter(FLTO)->Map_Function|-> Direction
+*                                                                                                                            
 */
 
-// #####################################################
-// AngleController_SingleDrive(Mode:Rate): Controller Shematic:  
+// ################################################################################################
+// AngleController_SingleDrive(Mode:1:Angle): Controller Shematic:  
 
-/* 
-                                                             |->Limit(*FF2) ------------------------------------->|(+)|                                           |-> PrimaryOutput
-                                                             |       |*KP_rate ---------------------------------->|(+)|                                           |-> SecondaryOutput 
-Rate_des[deg/s]->Limit->Lowpass_Filter(FLTT)->SlewRateLimit->|-Rate->|Integral_Limit(*KI_rate) ------------------>|(+)|->Limit->Lowpass_Filter(FLTO)->Map_Function|-> Direction
-                                                                     |Derivative(*KD_rate)->Lowpass_Filter(FLTD)->|(+)|                                           
+/**  
+*                                                                                                                    |->Limit(*FF2) ------------------------------------->|(+)|                                           |-> PrimaryOutput
+*   Limit(Rate_des[deg/s]*FF1)----------------------------------->|(+)|                                              |       |*KP_rate ---------------------------------->|(+)|                                           |-> SecondaryOutput 
+*   Limit(Angle_des[deg])-Angle[deg]->|*KP_angle----------------->|(+)|->Limit->Lowpass_Filter(FLTT)->SlewRateLimit->|-Rate->|Integral_Limit(*KI_rate) ------------------>|(+)|->Limit->Lowpass_Filter(FLTO)->Map_Function|-> Direction
+*                                     |Integral_Limit(*KI_angle)->|(+)|                                                      |Derivative(*KD_rate)->Lowpass_Filter(FLTD)->|(+)|                                           
+*/
+
+// #################################################################################################
+// AngleController_SingleDrive(Mode:2:Rate): Controller Shematic:  
+
+/**  
+*                                                                |->Limit(*FF2) ------------------------------------->|(+)|                                           |-> PrimaryOutput
+*                                                                |       |*KP_rate ---------------------------------->|(+)|                                           |-> SecondaryOutput 
+*   Rate_des[deg/s]->Limit->Lowpass_Filter(FLTT)->SlewRateLimit->|-Rate->|Integral_Limit(*KI_rate) ------------------>|(+)|->Limit->Lowpass_Filter(FLTO)->Map_Function|-> Direction
+*                                                                        |Derivative(*KD_rate)->Lowpass_Filter(FLTD)->|(+)|                                           
 */
 
 
-// ######################################################
+// ######################################################################################################
 // AngleController_DualDrive(Mode:Angle)(Without equalizer): Controller Shematic: 
 
 /*                                
@@ -116,8 +126,9 @@ Rate_des[deg/s]->Limit->Lowpass_Filter(FLTT)->SlewRateLimit->|-Rate1->|Integral_
 #define AngleController_UpdateMode_Manual        0   // Controller output updated when call update function.
 #define AngleController_UpdateMode_Auto          1   // Controller output updated automatically at separated thread. ** _FRQ parameter must be non zero, otherwise this mode not worked.
 
-#define AngleController_Mode_Angle               0
-#define AngleController_Mode_Rate                1
+#define AngleController_Mode_Direct              0
+#define AngleController_Mode_Angle               1
+#define AngleController_Mode_Rate                2
 
 // #####################################################
 // AngleController essential struct variables:
@@ -148,122 +159,143 @@ namespace AngleControllerNamespace
 
         /**
          * #### Param #2
+         * @brief Angle controller I gain. [-]
+         * @note - Convert error Integral of error [deg] to internal demanded rate [deg/s].
+         */    
+        float ANG_I;
+
+        /**
+         * #### Param #3
          * @brief Rate controller P gain. [-]
          * @note - Convert error rate [deg/s] to primary output control signal.
          */       
         float RAT_P; 
 
         /**
-         * #### Param #3
+         * #### Param #4
          * @brief Rate controller I gain. [-]
          * @note - Convert error rate [deg/s] to primary output control signal.
          */           
         float RAT_I;  
 
         /**
-         * #### Param #4
+         * #### Param #5
          * @brief Rate controller D gain. [-]
          * @note - Convert error rate [deg/s] to primary output control signal.
          *  */                 
         float RAT_D; 
 
         /**
-         * #### Param #5
+         * #### Param #6
          * @brief Controller feed forward gain type1. (For angle controller). [-]
          * @note - Convert target rate [deg/s] at angle mode to internal demanded rate [deg/s].
          */          
         float FF1; 
 
         /**
-         * #### Param #6
+         * #### Param #7
          * @brief Controller feed forward gain type2. (for rate controller)
          * @note - Convert internal demanded rate [deg/s] to primary output control signal.
          */               
         float FF2;  
 
         /**
-         * #### Param #7
+         * #### Param #8
          * @brief Lowpass filter frequency for target rate. [Hz]
-         * @note - Value 0 disabled filter.
+         * @note - The value of 0 meanse it is disabled.
          */              
         float FLTT;                 
         
         /**
-         * #### Param #8
+         * #### Param #9
          * @brief Lowpass filter frequency for derivative of rate. [Hz]
-         * @note - Value 0 disabled filter. 
+         * @note - The value of 0 meanse it is disabled.
          */
         float FLTD;                  
         
-        /**
+        /** #### Param #10
          * @brief Lowpass filter frequency for controller output. [Hz]
-         * @note - Value 0 disabled filter.
+         * @note - The value of 0 meanse it is disabled.
          */
         float FLTO;                 
         
         /**
-         * #### Param #10
+         * #### Param #11
+         * @brief Enable/Disable angle limitation function.
+         * @note - It works at all modes.
+         */
+        bool ANG_LIMIT_ENA;  
+
+        /**
+         * #### Param #12
          * @brief Upper limitation angle for controller. [deg]
          * @note - It works at all modes.
          */
         float ANG_UP_LIMIT;          
         
         /**
-         * #### Param #11
+         * #### Param #13
          * @brief Down limitation angle for controller. [deg]
          * @note - It works at all modes.
          */
         float ANG_DOWN_LIMIT;       
         
         /**
-         * #### Param #12
+         * #### Param #14
+         * @brief Max integral control output for angle controller output. [deg/s]
+         * @note - The value of 0 meanse it is disabled.
+         */
+        float ANG_IMAX;  
+
+        /**
+         * #### Param #15
          * @brief Max integral control output for rate controller output. [-]
-         * @note - Value 0 means Disabled.
+         * @note - The value of 0 meanse it is disabled.
          */
         float RAT_IMAX;             
         
         /**
-         * #### Param #13
+         * #### Param #16
          * @brief Max internal demanded rate rate. [deg/s]
-         * @note - Value 0 means Disabled.
+         * @note - The value of 0 meanse it is disabled.
          */
         float RAT_MAX;              
         
         /**
-         * #### Param #14
+         * #### Param #17
          * @brief Target rate magnitude for fast movement state. [deg/s]
          */
         float RAT_FAST;             
         
         /**
-         * #### Param #15
+         * #### Param #18
          * @brief Target rate magnetude for slow movement state. [deg/s]
          */
         float RAT_SLOW;             
         
         /**
-         * #### Param #16
+         * #### Param #19
          * @brief Acceleration/Decleration magnetude limitation. [deg/s^2]
          * @note
          */
         float RAT_SLEWRATE;         
         
         /**
-         * #### Param #17
+         * #### Param #20
          * @brief Max feedForward control output for feedforward type1. [deg/s]
-         * @note - Value 0 means Disabled.
+         * @note - The value of 0 meanse it is disabled.
          */
         float FF1_MAX;              
         
         /**
-         * #### Param #18
+         * #### Param #21
          * @brief Max feedforward control output for feedforward type2. [-]
-         * @note - Value 0 means Disabled.
+         * @note - The value of 0 meanse it is disabled.
          */
         float FF2_MAX;              
 
         /**
-         * #### Param #19
+         * #### Param #22
          * @brief  Controller loop frequency. [Hz]
          * @note - Value: 0 -> Free Frequency-> time and frequency changed when controller become update.
          * @note - Value: non zero -> Lock Frequency-> time and frequency of controller update locked to FRQ value.
@@ -271,7 +303,7 @@ namespace AngleControllerNamespace
         float FRQ;                      
 
         /**
-         * #### Param #20
+         * #### Param #23
          * @brief Controller update mode. [-]
          * @note - 0: Manual update-> Controller output updated when call update function.
          * @note - 1: Auto update-> Controller output updated automatically at separated thread. 
@@ -280,35 +312,35 @@ namespace AngleControllerNamespace
         uint8_t UPDATE_MODE;
         
         /**
-         * #### Param #21
+         * #### Param #24
          * @brief PrimaryOutput deadzone value for maped controller output.
-         * @note - Value 0 means Disabled.
+         * @note - The value of 0 meanse it is disabled.
          */
         float PRIM_DEADZONE;       
         
         /**
-         * #### Param #22
+         * #### Param #25
          * @brief Max PrimaryOutput value for maped controller output.
-         * @note - Value 0 means Disabled.
+         * @note - The value of 0 meanse it is disabled.
          */
         float PRIM_MAX;            
         
         /**
-         * #### Param #23
+         * #### Param #26
          * @brief Range PrimaryOutput value for maped controller output.
-         * @note - Value 0 means Disabled.
+         * @note - The value of 0 meanse it is disabled.
          */
         float PRIM_RANGE;          
         
         /**
-         * #### Param #24
+         * #### Param #27
          * @brief Range SecondaryOutput value for maped controller output.
-         * @note - Value 0 means Disabled.
+         * @note - The value of 0 meanse it is disabled.
          */
         float SECON_RANGE;         
         
         /**
-         * #### Param #25
+         * #### Param #28
          * @brief Controller direction polarity. normal direction:0, reverse direction:1
          */
         uint8_t DIR_POL;           
@@ -409,6 +441,7 @@ namespace AngleControllerNamespace
          */
         Inputs();
 
+        float direct;                         ///! [-]. Direct value for direct mode of controller.      
         float angle;                          ///< [deg]. Angle value of plant.
         float rateMaster;                     ///< [deg/s]. Rate observer value of plant from master driver.
         float rateSlave;                      ///< [deg/s]. Rate observer value of plant from slave driver.
@@ -706,6 +739,48 @@ namespace AngleControllerNamespace
     };
 
 }
+// #######################################################################################
+// Path planning class:
+
+// namespace AngleControllerNamespace
+// {
+
+//     class PathPlanner
+//     {
+//         public:
+
+//             struct ParametersStructure
+//             {
+//                 /**
+//                  * @brief
+//                  */
+//                 float UP_LIMIT;
+
+//                 /**
+//                  * @brief
+//                  */
+//                 float DOWN_LIMIT;
+//             }parameters;
+
+//             struct ValueStructure
+//             {
+//                 /**
+//                  * @brief
+//                  */
+//                 float outputAngleDes;
+//             }value;
+
+//             PathPlanner();
+
+//             bool init(void);
+
+//             float getOutputAngleDes(float inputAngleDes, float angle);
+
+//         private:
+
+//             bool _checkParameters(void);
+//     };
+// }
 
 // #######################################################################################
 // PID class:
@@ -1072,103 +1147,127 @@ class AngleController_SingleDrive
 {
     public:
 
-        // parameter struct
+        /// @brief parameter struct
         AngleControllerNamespace::SingleDriveParams parameters;  
 
-        // Outputs struct
+        /// @brief Outputs struct
         AngleControllerNamespace::Outputs outputs;
 
-        // Last error for object.
+        /// @brief Last error occurred for the object.
         std::string errorMessage;
 
-        /*
-            Constructor. Init parameters by default values.
-        */
+        /**
+         * @brief Default constructor. Init parameters by default values.
+         */
         AngleController_SingleDrive();
 
-        // Set controller mode. 0:Angle, 1:Rate.
+        /**
+         * @brief Set controller mode. 0:Direct, 1:Angle, 2:Rate.
+         * @brief return true if succeeded.
+         *  */ 
         bool setMode(const uint8_t &mode);
+
+        uint8_t getMode(void);
         
-        // Return instance frequency of update controller variable. It can changed by rate of call the update function.
+        /**
+         * @brief Return instance frequency of update controller variable. It can changed by rate of call the update function.
+         *  */ 
         float getFrq(void);    
 
-        // Return controller error value. error_angle or error_rate depends on controller mode.
+        /**
+         * @brief Return controller error value. error_angle or error_rate depends on controller mode.
+         *  */ 
         float getError(void);  
 
+        /**
+         * @brief Get internal Rate demanded. It is calculated just by controller.
+         */
         float getRateDemanded(void);
 
-        // Get method for return parameters value:
+        /**
+         * @brief Get method for return parameters value:
+         *  */ 
         void getParams(AngleControllerNamespace::SingleDriveParams *params);
 
         // ------------------------------------------
         // Virtual functions:
 
-        /* 
-            Check params for allowable values.
-            Calculate some variavles depends on other Parameters.
-            @return true if successed.
-        */
+        /**
+         * @brief Check params for allowable values. Calculate some variavles depends on other Parameters.
+         * @return true if succeeded.
+         *  */ 
         virtual bool init(void);  
 
-        /** 
-            Update controller outputs.
-            @param T_now: Time at the update moment. [us]
-            @return true if successed.
-        */
+        /**
+         * @brief Update controller outputs.
+         * @param T_now: Time at the update moment. [us]
+         * @return true if successed.
+         *  */ 
         virtual bool update(const uint64_t &T_now);
 
-        // Clear any buffer date on variables.
+        /// @brief Clear any buffer date on variables.
         virtual void clear(void);     
 
-        // Set inputs data for controller.
+        /// @brief Set inputs data for controller.
         virtual void setInputs(const AngleControllerNamespace::Inputs &data); 
 
-        // Set method for parameters value.
+        /**
+         * @brief Set method for parameters value.
+         * @return true if succeeded.
+         *  */ 
         bool setParams(const AngleControllerNamespace::SingleDriveParams &data);
 
     protected:
 
-        // Error angle of controller.
+        /// @brief Error angle of controller.
         float _eAngle;
 
-        // Error rate of controller.
+        /// @brief Error rate of controller.
         float _eRate;
 
+        /// @brief Internal Rate demanded. It is calculated just by controller.
         float _rateDemanded;
 
-        // [Hz]. Measured controller Loop Frequency for update. Depends on executation of update function frequency. 
+        /// @brief Measured controller Loop Frequency for update. [Hz]. It depends on executation of update function frequency. 
         float _frq;    
 
-        // [us]. Target Time duration for control loop update. Depends on params.FRQ.                
+        /// @brief Target Time duration for control loop update. [us]. It depends on params.FRQ.                
         float _targetTime;              
 
-        uint64_t _T[2];                // Time Vector:{T_now, T_Last}.  [us]
+        /// @brief Time Vector:{T_now, T_Last}.  [us]
+        uint64_t _T[2];                
 
-        uint64_t _dT;                  // Time Deference :{T_now-T_last}. [us]
+        /// @brief Time Deference :{T_now-T_last}. [us]
+        uint64_t _dT;                  
 
-        // Controller mode. 0:Angle, 1:Rate.
+        /// @brief Controller mode. 0:Direct, 1:Angle, 2:Rate.
         uint8_t _mode; 
 
-        // Inputs struct
+        /// @brief Inputs struct
         AngleControllerNamespace::Inputs _inputs;
 
-        // Map object for controller output mapping.
+        /// @brief Map object for controller output mapping.
         AngleControllerNamespace::MAP _map; 
 
-        // LPF object for low pass filter of target rate signal.
+        /// @brief LPF object for low pass filter of target rate signal.
         AngleControllerNamespace::LPFLimit _LPFT;
 
-        // LPF pbject for low pass filter of output signal.
+        /// @brief LPF pbject for low pass filter of output signal.
         AngleControllerNamespace::LPFLimit _LPFO;
 
-        // PID controller object for rate control.
+        /// @brief PI controller object for angle control.
+        AngleControllerNamespace::PIController _PIAngle;
+
+        /// @brief PID controller object for rate control.
         AngleControllerNamespace::PIDController _PIDRate;
 
-        // Slew rate object for angle acceleration limitation.
+        /// @brief Slew rate object for angle acceleration limitation.
         AngleControllerNamespace::LimitSlewRate _limitSlewRate;
 
-        // Check parameters for allowable values.
-        // @return true if successed.
+        /**
+         * @brief Check parameters for allowable values.
+         * @return true if succeeded.
+         *  */ 
         bool _checkParameters(const AngleControllerNamespace::SingleDriveParams &data);
 
 };

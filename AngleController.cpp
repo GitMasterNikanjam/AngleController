@@ -12,31 +12,34 @@ using namespace AngleControllerNamespace;
 
 SingleDriveParams::SingleDriveParams()
 {
-    ANG_P = 0;
-    RAT_P = 0;
-    RAT_I = 0;
-    RAT_D = 0;
-    RAT_IMAX = 0;
-    RAT_MAX = 0;
-    RAT_FAST = 0;
-    RAT_SLOW = 0;
-    RAT_SLEWRATE = 0;
-    ANG_DOWN_LIMIT = 0;
-    ANG_UP_LIMIT = 0;
-    DIR_POL = 0;
-    FF1 = 0;
-    FF1_MAX = 0;
-    FF2 = 0;
-    FF2_MAX = 0;
-    FLTD = 0;
-    FLTO = 0;
-    FLTT = 0;
-    FRQ = 0;
-    UPDATE_MODE = 0;
-    PRIM_DEADZONE = 0;
-    PRIM_MAX = 0;
-    PRIM_RANGE = 0;
-    SECON_RANGE = 0;
+    /* #1 */ ANG_P = 0;
+    /* #2 */ ANG_I = 0;
+    /* #3 */ RAT_P = 0;
+    /* #4 */ RAT_I = 0;
+    /* #5 */ RAT_D = 0;
+    /* #6 */ FF1 = 0;
+    /* #7 */ FF2 = 0;
+    /* #8 */ FLTT = 0;
+    /* #9 */ FLTD = 0;
+    /* #10 */ FLTO = 0;
+    /* #11 */ ANG_LIMIT_ENA = false;
+    /* #12 */ ANG_UP_LIMIT = 0;
+    /* #13 */ ANG_DOWN_LIMIT = 0;
+    /* #14 */ ANG_IMAX = 0;
+    /* #15 */ RAT_IMAX = 0;
+    /* #16 */ RAT_MAX = 0;
+    /* #17 */ RAT_FAST = 0;
+    /* #18 */ RAT_SLOW = 0;
+    /* #19 */ RAT_SLEWRATE = 0;
+    /* #20 */ FF1_MAX = 0;
+    /* #21 */ FF2_MAX = 0;
+    /* #22 */ FRQ = 0;
+    /* #23 */ UPDATE_MODE = 0;
+    /* #24 */ PRIM_DEADZONE = 0;
+    /* #25 */ PRIM_MAX = 0;
+    /* #26 */ PRIM_RANGE = 0;
+    /* #27 */ SECON_RANGE = 0;
+    /* #28 */ DIR_POL = 0;
 }
 
 DualDriveParams::DualDriveParams()
@@ -58,6 +61,7 @@ DualDriveEqParams::DualDriveEqParams()
 
 Inputs::Inputs()
 {
+    direct = 0;
     angle = 0;
     rateMaster = 0;
     rateSlave = 0;
@@ -733,6 +737,7 @@ void AngleController_SingleDrive::clear(void)
     outputs.secondaryOutput = 0;
 
     _inputs.angle = 0;
+    _inputs.direct = 0;
     _inputs.angleDes = 0;
     _inputs.rateMaster = 0;
     _inputs.rateSlave = 0;
@@ -748,38 +753,57 @@ void AngleController_SingleDrive::clear(void)
     _LPFO.clear();
     _LPFT.clear();
     _PIDRate.clear();
+    _PIAngle.clear();
     _limitSlewRate.clear();
 }
 
 AngleController_SingleDrive::AngleController_SingleDrive(void)
 {
-    /*1*/   parameters.ANG_P = 0;               
-    /*2*/   parameters.RAT_P = 0;               
-    /*3*/   parameters.RAT_I = 0;               
-    /*4*/   parameters.RAT_D = 0;           
-    /*5*/   parameters.FF1 = 0;                    
-    /*6*/   parameters.FF2 = 0;                 
-    /*7*/   parameters.FLTT = 0;              
-    /*8*/   parameters.FLTD = 0;                 
-    /*9*/   parameters.FLTO = 0;  
-    /*10*/  parameters.ANG_UP_LIMIT = 0;
-    /*11*/  parameters.ANG_DOWN_LIMIT = 0;              
-    /*12*/  parameters.RAT_IMAX = 0;    
-    /*13*/  parameters.RAT_MAX = 0;  
-    /*14*/  parameters.RAT_FAST = 0;
-    /*15*/  parameters.RAT_SLOW = 0;
-    /*16*/  parameters.RAT_SLEWRATE = 0;
-    /*17*/  parameters.FF1_MAX = 0;            
-    /*18*/  parameters.FF2_MAX = 0;            
-    /*19*/  parameters.FRQ = 0;                      
-    /*20*/  parameters.UPDATE_MODE = 0;
-    /*21*/  parameters.PRIM_DEADZONE = 0;  
-    /*22*/  parameters.PRIM_MAX = 0;  
-    /*23*/  parameters.PRIM_RANGE = 0;          
-    /*24*/  parameters.SECON_RANGE = 0;          
-    /*25*/  parameters.DIR_POL = 0; 
+    /* #1 */ parameters.ANG_P = 0;
+    /* #2 */ parameters.ANG_I = 0;
+    /* #3 */ parameters.RAT_P = 0;
+    /* #4 */ parameters.RAT_I = 0;
+    /* #5 */ parameters.RAT_D = 0;
+    /* #6 */ parameters.FF1 = 0;
+    /* #7 */ parameters.FF2 = 0;
+    /* #8 */ parameters.FLTT = 0;
+    /* #9 */ parameters.FLTD = 0;
+    /* #10 */ parameters.FLTO = 0;
+    /* #11 */ parameters.ANG_LIMIT_ENA = false;
+    /* #12 */ parameters.ANG_UP_LIMIT = 0;
+    /* #13 */ parameters.ANG_DOWN_LIMIT = 0;
+    /* #14 */ parameters.ANG_IMAX = 0;
+    /* #15 */ parameters.RAT_IMAX = 0;
+    /* #16 */ parameters.RAT_MAX = 0;
+    /* #17 */ parameters.RAT_FAST = 0;
+    /* #18 */ parameters.RAT_SLOW = 0;
+    /* #19 */ parameters.RAT_SLEWRATE = 0;
+    /* #20 */ parameters.FF1_MAX = 0;
+    /* #21 */ parameters.FF2_MAX = 0;
+    /* #22 */ parameters.FRQ = 0;
+    /* #23 */ parameters.UPDATE_MODE = 0;
+    /* #24 */ parameters.PRIM_DEADZONE = 0;
+    /* #25 */ parameters.PRIM_MAX = 0;
+    /* #26 */ parameters.PRIM_RANGE = 0;
+    /* #27 */ parameters.SECON_RANGE = 0;
+    /* #28 */ parameters.DIR_POL = 0;
 
-    _mode = 0;
+    _mode = AngleController_Mode_Direct;
+
+    outputs.dir = 0;
+    outputs.primaryOutput = 0;
+    outputs.secondaryOutput = 0;
+
+    _eAngle = 0;
+    _eRate = 0;
+    _rateDemanded = 0;
+
+    _inputs.angle = 0;
+    _inputs.angleDes = 0;
+    _inputs.direct = 0;
+    _inputs.rateDes = 0;
+    _inputs.rateMaster = 0;
+    _inputs.rateSlave = 0;
 
     clear();
 }
@@ -857,6 +881,17 @@ bool AngleController_SingleDrive::init(void)
         return false;
     }
 
+    _PIAngle.parameters.P = parameters.ANG_P;
+    _PIAngle.parameters.I = parameters.ANG_I;
+    _PIAngle.parameters.FF = parameters.FF1;
+    _PIAngle.parameters.FFMAX = parameters.FF1_MAX;
+    _PIAngle.parameters.IMAX = parameters.ANG_IMAX;
+    
+    if(!_PIAngle.init())
+    {
+        return false;
+    }
+
     _limitSlewRate.setLimit(parameters.RAT_SLEWRATE);
 
     return true;
@@ -864,7 +899,8 @@ bool AngleController_SingleDrive::init(void)
 
 bool AngleController_SingleDrive::_checkParameters(const AngleControllerNamespace::SingleDriveParams &data)
 {
-    bool param_cond = (data.ANG_P >= 0) &&              
+    bool param_cond = (data.ANG_P >= 0) && 
+                      (data.ANG_I >= 0) &&             
                       (data.RAT_P >= 0) &&               
                       (data.RAT_I >= 0) &&             
                       (data.RAT_D >= 0) &&             
@@ -872,7 +908,8 @@ bool AngleController_SingleDrive::_checkParameters(const AngleControllerNamespac
                       (data.FF2 >= 0) && 
                       (data.FLTT >= 0) &&                
                       (data.FLTD >= 0) &&              
-                      (data.FLTO >= 0) &&                
+                      (data.FLTO >= 0) &&    
+                      (data.ANG_IMAX >= 0) &&            
                       (data.RAT_IMAX >= 0) &&           
                       (data.RAT_MAX >= 0) &&             
                       (data.RAT_FAST >= 0) &&            
@@ -900,6 +937,12 @@ bool AngleController_SingleDrive::_checkParameters(const AngleControllerNamespac
             errorMessage = "Error AngleController: PRIM_MAX is more than PRIM_RANGE.";
             return false;
         }
+
+        if(data.PRIM_DEADZONE > data.PRIM_RANGE)
+        {
+            errorMessage = "Error AngleController: PRIM_DEADZONE is more than PRIM_RANGE.";
+            return false;
+        }
     }
 
     if(data.PRIM_MAX != 0)
@@ -907,15 +950,6 @@ bool AngleController_SingleDrive::_checkParameters(const AngleControllerNamespac
         if(data.PRIM_DEADZONE > data.PRIM_MAX)
         {
             errorMessage = "Error AngleController: PRIM_DEADZONE is more than PRIM_MAX.";
-            return false;
-        }
-    }
-
-    if(data.PRIM_RANGE > 0)
-    {
-        if(data.PRIM_DEADZONE > data.PRIM_RANGE)
-        {
-            errorMessage = "Error AngleController: PRIM_DEADZONE is more than PRIM_RANGE.";
             return false;
         }
     }
@@ -932,13 +966,10 @@ bool AngleController_SingleDrive::_checkParameters(const AngleControllerNamespac
         return false;
     }
 
-    if( (data.ANG_UP_LIMIT != 0) && (data.ANG_DOWN_LIMIT != 0) )
+    if(data.ANG_UP_LIMIT < data.ANG_DOWN_LIMIT)
     {
-        if(data.ANG_UP_LIMIT < data.ANG_DOWN_LIMIT)
-        {
-            errorMessage = "Error AngleController: Up angle limitation must be more than Down angle limitation.";
-            return false;
-        }
+        errorMessage = "Error AngleController: Up angle limitation must be more than Down angle limitation.";
+        return false;
     }
 
     return true;
@@ -948,20 +979,26 @@ bool AngleController_SingleDrive::update(const uint64_t &T_now)
 {
     if( (T_now <= _T[0]) )
     {
+        if(T_now == _T[0])
+        {
+            return true;
+        }
+        errorMessage = "Error AngleController_SingleDrive: The time differences in the controller cannot be negative.";
         return false;
     }
-
-    _T[1] = _T[0];
-    _T[0] = T_now;
 
     if(parameters.FRQ != 0)
     {
         if(T_now < (_T[1] + _targetTime))
         {
-            std::this_thread::sleep_for(std::chrono::microseconds(uint64_t(_T[1] + _targetTime - T_now)));
-            _T[0] = _T[1] + _targetTime;
+            // std::this_thread::sleep_for(std::chrono::microseconds(uint64_t(_T[1] + _targetTime - T_now)));
+            // _T[0] = _T[1] + _targetTime;
+            return true;
         }
     }
+
+    _T[1] = _T[0];
+    _T[0] = T_now;
 
     _dT = _T[0] - _T[1];
     
@@ -969,21 +1006,44 @@ bool AngleController_SingleDrive::update(const uint64_t &T_now)
 
     float temp;
 
-    if(_mode == AngleController_Mode_Angle)
+    switch(_mode)
     {
-        // Error angle signal
-        _eAngle = _inputs.angleDes - _inputs.angle;
-        temp = _eAngle * parameters.ANG_P;// + limit(inputs.ratDes * parameters.FF1, parameters.FF1_MAX, parameters.RAT_MAX);
-    }
-    else if(_mode == AngleController_Mode_Rate)
-    {
-        _eRate = _inputs.rateDes - _inputs.rateMaster;
-        temp = _inputs.rateDes;
+        case AngleController_Mode_Direct:
+            temp = _inputs.direct;
+        break;
+        case AngleController_Mode_Angle:
+            _eAngle = _inputs.angleDes - _inputs.angle;
+            temp = _inputs.rateDes * parameters.FF1;
+
+            if(parameters.FF1_MAX > 0)
+            {
+                temp = limit(temp, parameters.FF1_MAX);
+            }
+
+            temp = temp + _PIAngle.updateByFrequency(_inputs.angleDes, _inputs.angle, _frq);
+        break;
+        case AngleController_Mode_Rate:
+            _eRate = _inputs.rateDes - _inputs.rateMaster;
+            temp = _inputs.rateDes;
+        break;
+        default:
+            errorMessage = "Error AngleController_SingleDrive: The mode number of controller is not correct value.";
+            return false;
     }
     
-    temp = _LPFT.updateByFrequency(temp, _frq);
-    temp = _limitSlewRate.updateByFrequency(temp, _frq);
-    temp = _PIDRate.updateByFrequency(_inputs.rateMaster, temp, _frq);
+    if(_mode != AngleController_Mode_Direct)
+    {   
+        temp = _LPFT.updateByFrequency(temp, _frq);
+        temp = _limitSlewRate.updateByFrequency(temp, _frq);
+        _PIDRate.updateByFrequency(temp, _inputs.rateMaster, _frq);
+        temp = temp * parameters.FF2;
+        if(parameters.FF2_MAX > 0)
+        {
+            temp = limit(temp, parameters.FF2_MAX);
+        }
+        temp = temp + _PIDRate.output;
+    }
+
     temp = _LPFO.updateByFrequency(temp, _frq);
     outputs = _map.update(temp);
 
@@ -1008,41 +1068,42 @@ bool AngleController_SingleDrive::setParams(const AngleControllerNamespace::Sing
 
 bool AngleController_SingleDrive::setMode(const uint8_t &mode)
 {
-    if(mode > 1)
+    if(mode > 2)
     {
-        errorMessage = "Error AngleController: MODE must be 0 or 1.";
+        errorMessage = "Error AngleController: The mode value is not correct. The mode value must be 0, 1 or 2.";
         return false;
     }
 
     // Check change mode condition
     if(mode != _mode)
     {
-    //    clear();
        _mode = mode;
     }
 
     return true;
 }
 
+uint8_t AngleController_SingleDrive::getMode(void)
+{
+    return _mode;
+}
+
 void AngleController_SingleDrive::setInputs(const AngleControllerNamespace::Inputs &data)
 {   
     _inputs = data;
     
-    if(parameters.ANG_UP_LIMIT != 0)
+    if(parameters.ANG_LIMIT_ENA == true)
     {
-        _inputs.angleDes = limitUp(_inputs.angleDes, parameters.ANG_UP_LIMIT);
-    }
-    
-    if(parameters.ANG_DOWN_LIMIT != 0)
-    {
-        _inputs.angleDes = limitDown(_inputs.angleDes, parameters.ANG_DOWN_LIMIT);
+        if(_inputs.angleDes > parameters.ANG_UP_LIMIT)
+        {
+            _inputs.angleDes = limit(_inputs.angleDes, parameters.ANG_UP_LIMIT, parameters.ANG_DOWN_LIMIT);
+        }
     }
 
     if(parameters.RAT_MAX != 0)
     {
         _inputs.rateDes = limit(_inputs.rateDes, parameters.RAT_MAX);
     }
-    
 }
 
 float AngleController_SingleDrive::getFrq(void) 
@@ -1054,10 +1115,13 @@ float AngleController_SingleDrive::getError(void)
 {
     switch(_mode)
     {
-        case 0:
+        case AngleController_Mode_Direct:
+            return 0;
+        break;
+        case AngleController_Mode_Angle:
             return _eAngle;
         break;
-        case 1:
+        case AngleController_Mode_Rate:
             return _eRate;
         break;
         default:
@@ -1067,6 +1131,11 @@ float AngleController_SingleDrive::getError(void)
 
 float AngleController_SingleDrive::getRateDemanded(void)
 {
+    if(_mode == AngleController_Mode_Direct)
+    {
+        return 0;
+    }
+
     return _rateDemanded;
 }
 
