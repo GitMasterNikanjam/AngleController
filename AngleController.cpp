@@ -788,7 +788,7 @@ AngleController_SingleDrive::AngleController_SingleDrive(void)
     /* #27 */ parameters.SECON_RANGE = 0;
     /* #28 */ parameters.DIR_POL = 0;
 
-    _mode = AngleController_Mode_Direct;
+    _mode = AngleController_Mode_None;
 
     outputs.dir = 0;
     outputs.primaryOutput = 0;
@@ -878,6 +878,7 @@ bool AngleController_SingleDrive::init(void)
     
     if(!_PIDRate.init())
     {
+        errorMessage = _PIDRate.errorMessage;
         return false;
     }
 
@@ -889,6 +890,7 @@ bool AngleController_SingleDrive::init(void)
     
     if(!_PIAngle.init())
     {
+        errorMessage = _PIAngle.errorMessage;
         return false;
     }
 
@@ -1068,9 +1070,9 @@ bool AngleController_SingleDrive::setParams(const AngleControllerNamespace::Sing
 
 bool AngleController_SingleDrive::setMode(const uint8_t &mode)
 {
-    if(mode > 2)
+    if(mode > 4)
     {
-        errorMessage = "Error AngleController: The mode value is not correct. The mode value must be 0, 1 or 2.";
+        errorMessage = "Error AngleController: The mode value is not correct. The mode value must be 0, 1, 2, 3 and 4";
         return false;
     }
 
@@ -1115,6 +1117,9 @@ float AngleController_SingleDrive::getError(void)
 {
     switch(_mode)
     {
+        case AngleController_Mode_None:
+            return 0;
+        break;
         case AngleController_Mode_Direct:
             return 0;
         break;
@@ -1124,14 +1129,19 @@ float AngleController_SingleDrive::getError(void)
         case AngleController_Mode_Rate:
             return _eRate;
         break;
+        case AngleController_Mode_Tracking:
+            return _eAngle;
+        break;
         default:
             return 0;
     }
+
+    return 0;
 }
 
 float AngleController_SingleDrive::getRateDemanded(void)
 {
-    if(_mode == AngleController_Mode_Direct)
+    if( (_mode == AngleController_Mode_Direct) || (_mode == AngleController_Mode_None) )
     {
         return 0;
     }

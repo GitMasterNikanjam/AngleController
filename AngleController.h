@@ -126,9 +126,43 @@ Rate_des[deg/s]->Limit->Lowpass_Filter(FLTT)->SlewRateLimit->|-Rate1->|Integral_
 #define AngleController_UpdateMode_Manual        0   // Controller output updated when call update function.
 #define AngleController_UpdateMode_Auto          1   // Controller output updated automatically at separated thread. ** _FRQ parameter must be non zero, otherwise this mode not worked.
 
-#define AngleController_Mode_Direct              0
-#define AngleController_Mode_Angle               1
-#define AngleController_Mode_Rate                2
+/**
+ * @brief No mode for angle controller.
+ * @note The controller is inactive in this mode.
+ *  */  
+#define AngleController_Mode_None                0
+
+/**
+ * @brief Direct mode for angle controller.
+ * @note - In direct control mode, the value is directly transferred to the primary value of the output signal controller.
+ * 
+ * @note - The output limitation, output filter frequency, and controller map functions are active in this mode.
+ * 
+ * @note - The desired angle and rate are neglected in this mode.
+ */
+#define AngleController_Mode_Direct              1
+
+/**
+ * @brief The angle mode for angle controller.
+ * @note - In this mode, the controller tries to control the angle value of the system. 
+ * 
+ * @note - The desired rate is neglected in this mode.
+ */
+#define AngleController_Mode_Angle               2
+
+/**
+ * @brief The rate mode for angle controller.
+ * @note - In this mode, the controller tries to control the rate value of the system.
+ * 
+ * @note - The desired position is neglected in this mode.
+ */
+#define AngleController_Mode_Rate                3
+
+/**
+ * @brief The tracking mode for angle controller.
+ * @note - In this mode, the controller tries to tracking the desired position and rate.
+ */
+#define AngleController_Mode_Tracking            4
 
 // #####################################################
 // AngleController essential struct variables:
@@ -1055,11 +1089,13 @@ namespace AngleControllerNamespace
 
                 /**
                  * @brief PrimaryOutput max limitation value.
+                 * @note The value of 0 means it is disabled.
                  */
                 float PRIM_MAX;
 
                 /**
                  * @brief PrimaryOutput range for set map scale.
+                 * @note The value of 0 means it is disabled.
                  */
                 float PRIM_RANGE;
 
@@ -1117,6 +1153,7 @@ namespace AngleControllerNamespace
 
             /**
              * @brief Slope of line for primary input/output mapping.
+             * @note The value is 1 if the PRIME_RANGE parameter is 0.
              */
             float _m_map;
 
@@ -1162,11 +1199,16 @@ class AngleController_SingleDrive
         AngleController_SingleDrive();
 
         /**
-         * @brief Set controller mode. 0:Direct, 1:Angle, 2:Rate.
-         * @brief return true if succeeded.
+         * @brief Set controller mode. 0:None, 1:Direct, 2:Angle, 3:Rate, 4:Tracking.
+         * @param mode is the mode value. It can used from "AngleController_Mode" macros for set mode value.
+         * @return true if succeeded.
          *  */ 
         bool setMode(const uint8_t &mode);
 
+        /**
+         * @brief Get the current control mode.
+         * @return 0:None, 1:Direct, 2:Angle, 3:Rate, 4:Tracking.
+         */
         uint8_t getMode(void);
         
         /**
@@ -1176,6 +1218,11 @@ class AngleController_SingleDrive
 
         /**
          * @brief Return controller error value. error_angle or error_rate depends on controller mode.
+         * @note - In None and Direct modes returns 0.
+         * 
+         * @note - In Tracking and Angle modes returns error of angle.
+         * 
+         * @note - In Rate mode retrurns error of rate.
          *  */ 
         float getError(void);  
 
