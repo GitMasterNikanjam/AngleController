@@ -1010,10 +1010,35 @@ bool AngleController_SingleDrive::update(const uint64_t &T_now)
 
     switch(_mode)
     {
+        case AngleController_Mode_None:
+            temp = 0;
+            _PIAngle.clear();
+            _LPFT.updateByFrequency(0, _frq);
+            _limitSlewRate.updateByFrequency(0, _frq);
+            _PIDRate.clear();
+            _LPFO.updateByFrequency(0, _frq);
+            outputs = _map.update(0);
+            return true;
+        break;
         case AngleController_Mode_Direct:
             temp = _inputs.direct;
+            _PIAngle.clear();
+            _LPFT.updateByFrequency(0, _frq);
+            _limitSlewRate.updateByFrequency(0, _frq);
+            _PIDRate.clear();
+            temp = _LPFO.updateByFrequency(temp, _frq);
+            outputs = _map.update(temp);
+            return true;
         break;
         case AngleController_Mode_Angle:
+            _eAngle = _inputs.angleDes - _inputs.angle;
+            temp = _PIAngle.updateByFrequency(_inputs.angleDes, _inputs.angle, _frq);
+        break;
+        case AngleController_Mode_Rate:
+            _eRate = _inputs.rateDes - _inputs.rateMaster;
+            temp = _inputs.rateDes;
+        break;
+        case AngleController_Mode_Tracking:
             _eAngle = _inputs.angleDes - _inputs.angle;
             temp = _inputs.rateDes * parameters.FF1;
 
@@ -1024,28 +1049,20 @@ bool AngleController_SingleDrive::update(const uint64_t &T_now)
 
             temp = temp + _PIAngle.updateByFrequency(_inputs.angleDes, _inputs.angle, _frq);
         break;
-        case AngleController_Mode_Rate:
-            _eRate = _inputs.rateDes - _inputs.rateMaster;
-            temp = _inputs.rateDes;
-        break;
         default:
             errorMessage = "Error AngleController_SingleDrive: The mode number of controller is not correct value.";
             return false;
     }
     
-    if(_mode != AngleController_Mode_Direct)
-    {   
-        temp = _LPFT.updateByFrequency(temp, _frq);
-        temp = _limitSlewRate.updateByFrequency(temp, _frq);
-        _PIDRate.updateByFrequency(temp, _inputs.rateMaster, _frq);
-        temp = temp * parameters.FF2;
-        if(parameters.FF2_MAX > 0)
-        {
-            temp = limit(temp, parameters.FF2_MAX);
-        }
-        temp = temp + _PIDRate.output;
+    temp = _LPFT.updateByFrequency(temp, _frq);
+    temp = _limitSlewRate.updateByFrequency(temp, _frq);
+    _PIDRate.updateByFrequency(temp, _inputs.rateMaster, _frq);
+    temp = temp * parameters.FF2;
+    if(parameters.FF2_MAX > 0)
+    {
+        temp = limit(temp, parameters.FF2_MAX);
     }
-
+    temp = temp + _PIDRate.output;
     temp = _LPFO.updateByFrequency(temp, _frq);
     outputs = _map.update(temp);
 
@@ -1072,7 +1089,7 @@ bool AngleController_SingleDrive::setMode(const uint8_t &mode)
 {
     if(mode > 4)
     {
-        errorMessage = "Error AngleController: The mode value is not correct. The mode value must be 0, 1, 2, 3 and 4";
+        errorMessage = "Error AngleController: The mode value is not correct. The mode value must be 0: None, 1:Direct, 2:Angle, 3:Rate and 4:Tracking";
         return false;
     }
 
@@ -1096,16 +1113,30 @@ void AngleController_SingleDrive::setInputs(const AngleControllerNamespace::Inpu
     
     if(parameters.ANG_LIMIT_ENA == true)
     {
-        if(_inputs.angleDes > parameters.ANG_UP_LIMIT)
+        _inputs.angleDes = limit(_inputs.angleDes, parameters.ANG_UP_LIMIT, parameters.ANG_DOWN_LIMIT);
+
+        if(_inputs.angle >= parameters.ANG_UP_LIMIT)
         {
-            _inputs.angleDes = limit(_inputs.angleDes, parameters.ANG_UP_LIMIT, parameters.ANG_DOWN_LIMIT);
+            if(_inputs.rateDes > 0)
+            {
+                _inputs.rateDes = 0;
+            }
         }
+        else if(_inputs.angle <= parameters.ANG_DOWN_LIMIT)
+        {
+            if(_inputs.rateDes < 0)
+            {
+                _inputs.rateDes = 0;
+            }
+        }
+
     }
 
     if(parameters.RAT_MAX != 0)
     {
         _inputs.rateDes = limit(_inputs.rateDes, parameters.RAT_MAX);
     }
+
 }
 
 float AngleController_SingleDrive::getFrq(void) 

@@ -1287,8 +1287,8 @@ class AngleController_SingleDrive
         /// @brief Time Deference :{T_now-T_last}. [us]
         uint64_t _dT;                  
 
-        /// @brief Controller mode. 0:Direct, 1:Angle, 2:Rate.
-        uint8_t _mode; 
+        /// @brief Controller mode. 0:None, 1:Direct, 2:Angle, 3:Rate, , 4:Tracking.
+        uint8_t _mode;
 
         /// @brief Inputs struct
         AngleControllerNamespace::Inputs _inputs;
