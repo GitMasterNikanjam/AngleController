@@ -79,7 +79,7 @@ Outputs::Outputs()
 // #############################################################################################
 // General Functions:
 
-float AngleControllerNamespace::limit(const float &input, const float &upLimit, const float &downLimit)
+double AngleControllerNamespace::limit(const double &input, const double &upLimit, const double &downLimit)
 {
     if(input > upLimit)
         return upLimit;
@@ -89,9 +89,9 @@ float AngleControllerNamespace::limit(const float &input, const float &upLimit, 
     return input;
 }
 
-float AngleControllerNamespace::limit(const float &input, const float &limit)
+double AngleControllerNamespace::limit(const double &input, const double &limit)
 {
-    float absLimit = abs(limit);
+    double absLimit = abs(limit);
 
     if(input > absLimit)
         return absLimit;
@@ -101,7 +101,7 @@ float AngleControllerNamespace::limit(const float &input, const float &limit)
     return input;
 }
 
-float AngleControllerNamespace::limitUp(const float &input, const float &upLimit)
+double AngleControllerNamespace::limitUp(const double &input, const double &upLimit)
 {
     if(input > upLimit)
         return upLimit;
@@ -109,7 +109,7 @@ float AngleControllerNamespace::limitUp(const float &input, const float &upLimit
     return input;
 }
 
-float AngleControllerNamespace::limitDown(const float &input, const float &downLimit)
+double AngleControllerNamespace::limitDown(const double &input, const double &downLimit)
 {
     if(input < downLimit)
         return downLimit;
@@ -120,7 +120,7 @@ float AngleControllerNamespace::limitDown(const float &input, const float &downL
 // #############################################################################################
 // LimitSlewRate class:
 
-bool AngleControllerNamespace::LimitSlewRate::setLimit(float value)
+bool AngleControllerNamespace::LimitSlewRate::setLimit(double value)
 {
     if(value < 0)
     {
@@ -132,7 +132,7 @@ bool AngleControllerNamespace::LimitSlewRate::setLimit(float value)
     return true;
 }
 
-float AngleControllerNamespace::LimitSlewRate::updateByTime(const float &input, const float &dt)
+double AngleControllerNamespace::LimitSlewRate::updateByTime(const double &input, const double &dt)
 {
     if(dt <= 0)
     {
@@ -140,7 +140,7 @@ float AngleControllerNamespace::LimitSlewRate::updateByTime(const float &input, 
     }
 
     // Calculate derivative of input value.
-    float d = (input - _input) / dt;
+    double d = (input - _input) / dt;
 
     _calculate(input, d, 1.0/dt);
 
@@ -149,7 +149,7 @@ float AngleControllerNamespace::LimitSlewRate::updateByTime(const float &input, 
     return output;
 }
 
-float AngleControllerNamespace::LimitSlewRate::updateByFrequency(const float &input, const float &frq)
+double AngleControllerNamespace::LimitSlewRate::updateByFrequency(const double &input, const double &frq)
 {
     if(frq <= 0)
     {
@@ -157,7 +157,7 @@ float AngleControllerNamespace::LimitSlewRate::updateByFrequency(const float &in
     }
 
     // Calculate derivative of input value.
-    float d = (input - output) * frq;
+    double d = (input - output) * frq;
 
     _calculate(input, d, frq);
 
@@ -171,7 +171,7 @@ void AngleControllerNamespace::LimitSlewRate::clear(void)
     output = 0;
 }
 
-void AngleControllerNamespace::LimitSlewRate::_calculate(const float &input, const float &derivative, const float &frq)
+void AngleControllerNamespace::LimitSlewRate::_calculate(const double &input, const double &derivative, const double &frq)
 {
     if(SLEWRATE == 0)
     {
@@ -205,7 +205,7 @@ LPF::LPF()
     clear();
 }
 
-float LPF::updateByTime(const float &input, const float &dt)
+double LPF::updateByTime(const double &input, const double &dt)
 {
     if( (dt <= 0) || (parameters.FRQ < 0) )
     {
@@ -226,7 +226,7 @@ float LPF::updateByTime(const float &input, const float &dt)
     return output;
 }
 
-float LPF::updateByFrequency(const float &input, const float &frq)
+double LPF::updateByFrequency(const double &input, const double &frq)
 {
     if( (frq <= 0) || (parameters.FRQ < 0) )
     {
@@ -247,7 +247,7 @@ float LPF::updateByFrequency(const float &input, const float &frq)
     return true;
 }
 
-bool LPF::setFrequency(const float &frq)
+bool LPF::setFrequency(const double &frq)
 {
     if(frq < 0)
     {
@@ -259,7 +259,7 @@ bool LPF::setFrequency(const float &frq)
     return true;
 }
 
-void LPF::setOutputDirect(const float &data)
+void LPF::setOutputDirect(const double &data)
 {
     output = data;
 }
@@ -281,7 +281,7 @@ LPFLimit::LPFLimit()
     parameters.UP_LIMIT_EN = true;
 }
 
-float LPFLimit::updateByTime(const float &input, const float &dt)
+double LPFLimit::updateByTime(const double &input, const double &dt)
 {
     if( (dt <= 0) || (parameters.FRQ < 0) )
     {
@@ -304,7 +304,7 @@ float LPFLimit::updateByTime(const float &input, const float &dt)
     return output;
 }
 
-float LPFLimit::updateByFrequency(const float &input, const float &frq)
+double LPFLimit::updateByFrequency(const double &input, const double &frq)
 {
     if( (frq <= 0) || (parameters.FRQ < 0) )
     {
@@ -318,7 +318,7 @@ float LPFLimit::updateByFrequency(const float &input, const float &frq)
         return output;
     }
 
-    float inputLimited = _limitInput(input);
+    double inputLimited = _limitInput(input);
 
     _alpha = 1.0/(1.0 + frq / (_2PI * parameters.FRQ));
 
@@ -327,21 +327,21 @@ float LPFLimit::updateByFrequency(const float &input, const float &frq)
     return output;
 }
 
-void LPFLimit::setInputLimit(float limit)
+void LPFLimit::setInputLimit(double limit)
 {
     parameters.UP_LIMIT = abs(limit);
     parameters.DOWN_LIMIT = -abs(limit);
 }
 
-void LPFLimit::setInputLimit(float upLimit, float DownLimit)
+void LPFLimit::setInputLimit(double upLimit, double DownLimit)
 {
     parameters.UP_LIMIT = upLimit;
     parameters.DOWN_LIMIT = DownLimit;
 }
 
-float LPFLimit::_limitInput(const float &input)
+double LPFLimit::_limitInput(const double &input)
 {
-    float inputLimited = input;
+    double inputLimited = input;
 
     if(parameters.UP_LIMIT_EN == true)
     {
@@ -372,7 +372,7 @@ PController::PController()
     parameters.FFMAX = 0;
 }
 
-float PController::update(const float &desiredState, const float &state)
+double PController::update(const double &desiredState, const double &state)
 {
     // Calculte error state.
     _e = desiredState - state;
@@ -466,7 +466,7 @@ bool PIController::init(void)
     return true;
 }
 
-float PIController::updateByTime(const float &desiredState, const float &state, const float &dt)
+double PIController::updateByTime(const double &desiredState, const double &state, const double &dt)
 {
     if(dt == 0)
     {
@@ -481,7 +481,7 @@ float PIController::updateByTime(const float &desiredState, const float &state, 
     return output;
 }
 
-float PIController::updateByFrequency(const float &desiredState, const float &state, const float &frq)
+double PIController::updateByFrequency(const double &desiredState, const double &state, const double &frq)
 {
     if(frq == 0)
     {
@@ -558,7 +558,7 @@ bool PIDController::init(void)
     _LPFD.setFrequency(parameters.FLTD);
 }
 
-float PIDController::updateByTime(const float &desiredState, const float &state, const float &dt)
+double PIDController::updateByTime(const double &desiredState, const double &state, const double &dt)
 {
     if(dt == 0)
     {
@@ -574,7 +574,7 @@ float PIDController::updateByTime(const float &desiredState, const float &state,
     return output;
 }
 
-float PIDController::updateByFrequency(const float &desiredState, const float &state, const float &frq)
+double PIDController::updateByFrequency(const double &desiredState, const double &state, const double &frq)
 {
     if(frq == 0)
     {
@@ -686,7 +686,7 @@ bool MAP::init(void)
     return true;
 }
 
-AngleControllerNamespace::Outputs MAP::update(const float &input)
+AngleControllerNamespace::Outputs MAP::update(const double &input)
 {
     if(input == 0)
     {
@@ -871,8 +871,8 @@ bool AngleController_SingleDrive::init(void)
     _PIDRate.parameters.P = parameters.RAT_P;
     _PIDRate.parameters.I = parameters.RAT_I;
     _PIDRate.parameters.D = parameters.RAT_D;
-    _PIDRate.parameters.FF = parameters.FF2;
-    _PIDRate.parameters.FFMAX = parameters.FF2_MAX;
+    _PIDRate.parameters.FF = 0;
+    _PIDRate.parameters.FFMAX = 0;
     _PIDRate.parameters.IMAX = parameters.RAT_IMAX;
     _PIDRate.parameters.FLTD = parameters.FLTD;
     
@@ -884,8 +884,8 @@ bool AngleController_SingleDrive::init(void)
 
     _PIAngle.parameters.P = parameters.ANG_P;
     _PIAngle.parameters.I = parameters.ANG_I;
-    _PIAngle.parameters.FF = parameters.FF1;
-    _PIAngle.parameters.FFMAX = parameters.FF1_MAX;
+    _PIAngle.parameters.FF = 0;
+    _PIAngle.parameters.FFMAX = 0;
     _PIAngle.parameters.IMAX = parameters.ANG_IMAX;
     
     if(!_PIAngle.init())
@@ -991,7 +991,7 @@ bool AngleController_SingleDrive::update(const uint64_t &T_now)
 
     if(parameters.FRQ != 0)
     {
-        if(T_now < (_T[1] + _targetTime))
+        if(T_now < (_T[0] + _targetTime))
         {
             // std::this_thread::sleep_for(std::chrono::microseconds(uint64_t(_T[1] + _targetTime - T_now)));
             // _T[0] = _T[1] + _targetTime;
@@ -1004,13 +1004,15 @@ bool AngleController_SingleDrive::update(const uint64_t &T_now)
 
     _dT = _T[0] - _T[1];
     
-    _frq = (1000000.0 / (float)_dT);
+    _frq = (1000000.0 / (double)_dT);
 
-    float temp;
+    double temp = 0;
 
     switch(_mode)
     {
         case AngleController_Mode_None:
+            _eAngle = 0;
+            _eRate = 0;
             temp = 0;
             _PIAngle.clear();
             _LPFT.updateByFrequency(0, _frq);
@@ -1021,6 +1023,8 @@ bool AngleController_SingleDrive::update(const uint64_t &T_now)
             return true;
         break;
         case AngleController_Mode_Direct:
+            _eAngle = 0;
+            _eRate = 0;
             temp = _inputs.direct;
             _PIAngle.clear();
             _LPFT.updateByFrequency(0, _frq);
@@ -1032,15 +1036,18 @@ bool AngleController_SingleDrive::update(const uint64_t &T_now)
         break;
         case AngleController_Mode_Angle:
             _eAngle = _inputs.angleDes - _inputs.angle;
+            _eRate = 0;
             temp = _PIAngle.updateByFrequency(_inputs.angleDes, _inputs.angle, _frq);
         break;
         case AngleController_Mode_Rate:
             _eRate = _inputs.rateDes - _inputs.rateMaster;
+            _eAngle = 0;
             temp = _inputs.rateDes;
         break;
         case AngleController_Mode_Tracking:
             _eAngle = _inputs.angleDes - _inputs.angle;
-            temp = _inputs.rateDes * parameters.FF1;
+            _eRate = _inputs.rateDes - _inputs.rateMaster;
+            temp = _inputs.rateDes * (double)parameters.FF1;
 
             if(parameters.FF1_MAX > 0)
             {

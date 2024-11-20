@@ -475,12 +475,12 @@ namespace AngleControllerNamespace
          */
         Inputs();
 
-        float direct;                         ///! [-]. Direct value for direct mode of controller.      
-        float angle;                          ///< [deg]. Angle value of plant.
-        float rateMaster;                     ///< [deg/s]. Rate observer value of plant from master driver.
-        float rateSlave;                      ///< [deg/s]. Rate observer value of plant from slave driver.
-        float angleDes;                       ///< [deg]. Desired angle value for controller. 
-        float rateDes;                        ///< [deg/s]. Desired rate value for controller.
+        double direct;                         ///! [-]. Direct value for direct mode of controller.      
+        double angle;                          ///< [deg]. Angle value of plant.
+        double rateMaster;                     ///< [deg/s]. Rate observer value of plant from master driver.
+        double rateSlave;                      ///< [deg/s]. Rate observer value of plant from slave driver.
+        double angleDes;                       ///< [deg]. Desired angle value for controller. 
+        double rateDes;                        ///< [deg/s]. Desired rate value for controller.
     };
 
     /**
@@ -495,8 +495,8 @@ namespace AngleControllerNamespace
          */
         Outputs();
 
-        float primaryOutput;                ///< [-]. primaryOutput value output from AngleController.
-        float secondaryOutput;              ///< [-]. secondaryOutput value output from AngleController. Depends on primaryOutput value.
+        double primaryOutput;                ///< [-]. primaryOutput value output from AngleController.
+        double secondaryOutput;              ///< [-]. secondaryOutput value output from AngleController. Depends on primaryOutput value.
         int8_t dir;                         ///< [-]. Direction signal value output from AngleController. {-1, 0, 1}
     };
 
@@ -517,7 +517,7 @@ namespace AngleControllerNamespace
      * @param upLimit: up limitation value.
      * @return Limited value. 
     */ 
-    float limitUp(const float &input, const float &upLimit);
+    double limitUp(const double &input, const double &upLimit);
 
     /** 
      * @brief General lower limit function.
@@ -526,7 +526,7 @@ namespace AngleControllerNamespace
      * @param downLimit: down limitation value.
      * @return Limited value. 
     */ 
-    float limitDown(const float &input, const float &downLimit);
+    double limitDown(const double &input, const double &downLimit);
 
     /** 
      * @brief General limit function.
@@ -536,7 +536,7 @@ namespace AngleControllerNamespace
      * @param downLimit: down limitation value.
      * @return Limited value. 
     */ 
-    float limit(const float &input, const float &upLimit, const float &downLimit);
+    double limit(const double &input, const double &upLimit, const double &downLimit);
 
     /** 
      * @brief General limit function.
@@ -545,7 +545,7 @@ namespace AngleControllerNamespace
      * @param limit: up/down limitation value. up_limit = +abs(limit), down_limit = -abs(limit).
      * @return Limited value. 
     */         
-    float limit(const float &input, const float &limit);
+    double limit(const double &input, const double &limit);
 
 }
 
@@ -578,14 +578,14 @@ namespace AngleControllerNamespace
             }
 
             // Buffer for output of slewRate value that used in update method.
-            float output;                           
+            double output;                           
 
             /**
              * @brief Set slew rate parameter value.
              * @param vlaue: must be positive.
              * @return true if successed.
              */
-            bool setLimit(float value);
+            bool setLimit(double value);
 
             /**
              * @brief Update output value of slew rate limit object.
@@ -593,7 +593,7 @@ namespace AngleControllerNamespace
              * @param dt: [sec]. Time step duration for update.
              * @return output of limitation.
              */
-            float updateByTime(const float &input, const float &dt);
+            double updateByTime(const double &input, const double &dt);
 
             /**
              * @brief Update output value of slew rate limit object.
@@ -601,7 +601,7 @@ namespace AngleControllerNamespace
              * @param frq: [Hz]. Frequency updatation.
              * @return output of limitation.
              */
-            float updateByFrequency(const float &input, const float &frq);
+            double updateByFrequency(const double &input, const double &frq);
 
             /**
              * @brief Clear any buffer on variables.
@@ -613,17 +613,17 @@ namespace AngleControllerNamespace
             /**
              * @brief Buffer for input of slewRate value that used in update method.
              */
-            float _input;     
+            double _input;     
 
             /**
              * @brief Slew rate parameter value. *Hint: 0 value means disable it.
              */
-            float SLEWRATE;        
+            double SLEWRATE;        
 
             /**
              * @brief Calculate and update limited output by input signal and derivative of input signal.
              */
-            void _calculate(const float &input, const float &derivative, const float &frq);
+            void _calculate(const double &input, const double &derivative, const double &frq);
     };
 }
 // #######################################################################################
@@ -657,7 +657,7 @@ namespace AngleControllerNamespace
             /**
              * @brief Buffer memory for output of lowpass filter.
              */
-            float output;              
+            double output;              
 
             /**
              * @brief Low pass filter updatation. Calculate output signal relative to input signal and time step.
@@ -666,7 +666,7 @@ namespace AngleControllerNamespace
              * @param dt: Time step duration. [sec].
              * @return output of filter.
              */
-            virtual float updateByTime(const float &input, const float &dt);
+            virtual double updateByTime(const double &input, const double &dt);
 
             /**
              * @brief Low pass filter updatation. Calculate output signal relative to input signal and frequency of update step.
@@ -675,20 +675,20 @@ namespace AngleControllerNamespace
              * @param frq: Frequency updatation step. [Hz].
              * @return output of filter
              */
-            virtual float updateByFrequency(const float &input, const float &frq);
+            virtual double updateByFrequency(const double &input, const double &frq);
 
             /**
              * @brief Set Cut off frequency of low pass filter.
              * @param frq: Cut off frequency. [Hz]
              * @return true if successed.
              *  */  
-            bool setFrequency(const float &frq);
+            bool setFrequency(const double &frq);
 
             /**
              * @brief Set output directely without filter.
              * Use this function for init value of output signal.
              */
-            void setOutputDirect(const float &data);
+            void setOutputDirect(const double &data);
 
             /**
              * @brief Clear any buffer on variables.
@@ -706,7 +706,7 @@ namespace AngleControllerNamespace
              * @note -  dt: Time step duration. [sec]
              * @note -  output_(n) = (1 - alpha) * output_(n-1) + alpha * input_(n)
              *  */ 
-            float _alpha;           
+            double _alpha;           
 
     };
 
@@ -739,7 +739,7 @@ namespace AngleControllerNamespace
              * @param dt: Time step duration. [sec].
              * @return output of filter.
              */
-            virtual float updateByTime(const float &input, const float &dt) override;
+            virtual double updateByTime(const double &input, const double &dt) override;
 
             /**
              * @brief Low pass filter updatation. Calculate output signal relative to input signal and frequency of update step.
@@ -748,20 +748,20 @@ namespace AngleControllerNamespace
              * @param frq: Time step duration. [Hz].
              * @return output of filter.
              */
-            virtual float updateByFrequency(const float &input, const float &frq) override;
+            virtual double updateByFrequency(const double &input, const double &frq) override;
 
             /** 
              * @brief Set input limitation values.
              * @param limit: up/down limitation value. up_limit = +abs(limit), down_limit = -abs(limit).
             */   
-            void setInputLimit(float limit);
+            void setInputLimit(double limit);
 
             /** 
              * @brief Set input limitation values.
              * @param upLimit: up limitation value.
              * @param downLimit: down limitation value.
             */ 
-            void setInputLimit(float upLimit, float DownLimit);
+            void setInputLimit(double upLimit, double DownLimit);
 
         private:
 
@@ -769,7 +769,7 @@ namespace AngleControllerNamespace
              * @brief Limit input data.
              * @return Limited value.
              */
-            float _limitInput(const float &input);
+            double _limitInput(const double &input);
     };
 
 }
@@ -834,7 +834,7 @@ namespace AngleControllerNamespace
             std::string errorMessage;
 
             /// @brief Output signal value of controller. [output_unit]
-            float output;          
+            double output;          
 
             /**
              * @brief Parameters structure.
@@ -875,7 +875,7 @@ namespace AngleControllerNamespace
              * @param state: Feedback state from plant system.
              * @return output value of controller.
              */
-            virtual float update(const float &desiredState, const float &state);
+            virtual double update(const double &desiredState, const double &state);
 
             /**
              * @brief Check params for valid values.
@@ -893,7 +893,7 @@ namespace AngleControllerNamespace
         protected:
 
             /// @brief [Input_unit]. Input error signal value. _e = desiredState - state;        
-            float _e;       
+            double _e;       
 
         private:
 
@@ -953,7 +953,7 @@ namespace AngleControllerNamespace
              * @param dt: Time step duration. [sec]
              * @return output value of controller.
              */
-            virtual float updateByTime(const float &desiredState, const float &state, const float &dt);
+            virtual double updateByTime(const double &desiredState, const double &state, const double &dt);
 
             /**
              * Update and calculate output signal of controller using update frequency.
@@ -962,11 +962,11 @@ namespace AngleControllerNamespace
              * @param frq: Frequency updatation. [Hz]
              * @return output value of controller.
              */
-            virtual float updateByFrequency(const float &desiredState, const float &state, const float &frq);
+            virtual double updateByFrequency(const double &desiredState, const double &state, const double &frq);
 
         protected:
 
-            float _ISum;        // buffer memory for output of integral summation controller.
+            double _ISum;        // buffer memory for output of integral summation controller.
 
         private: 
 
@@ -1022,7 +1022,7 @@ namespace AngleControllerNamespace
              * @param dt: Time step duration. [sec]
              * @return output value of controller.
              */
-            virtual float updateByTime(const float &desiredState, const float &state, const float &dt) override;
+            virtual double updateByTime(const double &desiredState, const double &state, const double &dt) override;
 
             /**
              * Update and calculate output signal of controller using update frequency.
@@ -1031,7 +1031,7 @@ namespace AngleControllerNamespace
              * @param frq: Frequency updatation. [Hz]
              * @return output value of controller.
              */
-            virtual float updateByFrequency(const float &desiredState, const float &state, const float &frq) override;
+            virtual double updateByFrequency(const double &desiredState, const double &state, const double &frq) override;
 
         protected:
 
@@ -1142,7 +1142,7 @@ namespace AngleControllerNamespace
              * @param input: output signal from controller. 
              * @return outputs object of the map.
              */
-            AngleControllerNamespace::Outputs update(const float &input);
+            AngleControllerNamespace::Outputs update(const double &input);
 
             /**
              * @brief Clear any buffer on variables.
@@ -1155,7 +1155,7 @@ namespace AngleControllerNamespace
              * @brief Slope of line for primary input/output mapping.
              * @note The value is 1 if the PRIME_RANGE parameter is 0.
              */
-            float _m_map;
+            double _m_map;
 
             /**
              * @brief Positive vlaue depends on output polarity.
@@ -1267,19 +1267,19 @@ class AngleController_SingleDrive
     protected:
 
         /// @brief Error angle of controller.
-        float _eAngle;
+        double _eAngle;
 
         /// @brief Error rate of controller.
-        float _eRate;
+        double _eRate;
 
         /// @brief Internal Rate demanded. It is calculated just by controller.
-        float _rateDemanded;
+        double _rateDemanded;
 
         /// @brief Measured controller Loop Frequency for update. [Hz]. It depends on executation of update function frequency. 
-        float _frq;    
+        double _frq;    
 
         /// @brief Target Time duration for control loop update. [us]. It depends on params.FRQ.                
-        float _targetTime;              
+        double _targetTime;              
 
         /// @brief Time Vector:{T_now, T_Last}.  [us]
         uint64_t _T[2];                
@@ -1407,3 +1407,13 @@ class AngleController_DualDriveEq : public AngleController_SingleDrive
 };
 
 #endif
+
+
+
+
+
+
+
+
+
+
