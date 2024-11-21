@@ -924,7 +924,20 @@ namespace AngleControllerNamespace
                 float I;                
 
                 // [outputs_unit]. Max magnitude output value of integral controller.  It must be positive.
-                float IMAX;             
+                float IMAX;  
+
+                /**
+                 * @brief The gain for exponential dynamic integral gain. [-]
+                 * @note - The value of 0 means it is disabled.
+                 * 
+                 * @note - I_dynamically = I * exp(-IEXP * abs(error))
+                 */
+                float IEXP;
+
+                /**
+                 * @brief The active zone for integral calculations.
+                 */
+                float IZONE;
             }parameters;
 
             /**
