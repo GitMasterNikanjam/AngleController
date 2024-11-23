@@ -19,6 +19,7 @@
 #include <iostream>
 #include <thread>
 #include <chrono>
+#include <cmath>
 
 using namespace std;
 
@@ -200,136 +201,148 @@ namespace AngleControllerNamespace
 
         /**
          * #### Param #3
+         * @brief Angle controller IEXP gain for dynamic exponentional integral gain. [-]
+         */    
+        float ANG_IEXP;
+
+        /**
+         * #### Param #4
+         * @brief Angle controller IZONE gain for zone of activeted integral controller. [-]
+         */    
+        float ANG_IZONE;
+
+        /**
+         * #### Param #5
          * @brief Rate controller P gain. [-]
          * @note - Convert error rate [deg/s] to primary output control signal.
          */       
         float RAT_P; 
 
         /**
-         * #### Param #4
+         * #### Param #6
          * @brief Rate controller I gain. [-]
          * @note - Convert error rate [deg/s] to primary output control signal.
          */           
         float RAT_I;  
 
         /**
-         * #### Param #5
+         * #### Param #7
          * @brief Rate controller D gain. [-]
          * @note - Convert error rate [deg/s] to primary output control signal.
          *  */                 
         float RAT_D; 
 
         /**
-         * #### Param #6
+         * #### Param #8
          * @brief Controller feed forward gain type1. (For angle controller). [-]
          * @note - Convert target rate [deg/s] at angle mode to internal demanded rate [deg/s].
          */          
         float FF1; 
 
         /**
-         * #### Param #7
+         * #### Param #9
          * @brief Controller feed forward gain type2. (for rate controller)
          * @note - Convert internal demanded rate [deg/s] to primary output control signal.
          */               
         float FF2;  
 
         /**
-         * #### Param #8
+         * #### Param #10
          * @brief Lowpass filter frequency for target rate. [Hz]
          * @note - The value of 0 meanse it is disabled.
          */              
         float FLTT;                 
         
         /**
-         * #### Param #9
+         * #### Param #11
          * @brief Lowpass filter frequency for derivative of rate. [Hz]
          * @note - The value of 0 meanse it is disabled.
          */
         float FLTD;                  
         
-        /** #### Param #10
+        /** #### Param #12
          * @brief Lowpass filter frequency for controller output. [Hz]
          * @note - The value of 0 meanse it is disabled.
          */
         float FLTO;                 
         
         /**
-         * #### Param #11
+         * #### Param #13
          * @brief Enable/Disable angle limitation function.
          * @note - It works at all modes.
          */
         bool ANG_LIMIT_ENA;  
 
         /**
-         * #### Param #12
+         * #### Param #14
          * @brief Upper limitation angle for controller. [deg]
          * @note - It works at all modes.
          */
         float ANG_UP_LIMIT;          
         
         /**
-         * #### Param #13
+         * #### Param #15
          * @brief Down limitation angle for controller. [deg]
          * @note - It works at all modes.
          */
         float ANG_DOWN_LIMIT;       
         
         /**
-         * #### Param #14
+         * #### Param #16
          * @brief Max integral control output for angle controller output. [deg/s]
          * @note - The value of 0 meanse it is disabled.
          */
         float ANG_IMAX;  
 
         /**
-         * #### Param #15
+         * #### Param #17
          * @brief Max integral control output for rate controller output. [-]
          * @note - The value of 0 meanse it is disabled.
          */
         float RAT_IMAX;             
         
         /**
-         * #### Param #16
+         * #### Param #18
          * @brief Max internal demanded rate rate. [deg/s]
          * @note - The value of 0 meanse it is disabled.
          */
         float RAT_MAX;              
         
         /**
-         * #### Param #17
+         * #### Param #19
          * @brief Target rate magnitude for fast movement state. [deg/s]
          */
         float RAT_FAST;             
         
         /**
-         * #### Param #18
+         * #### Param #20
          * @brief Target rate magnetude for slow movement state. [deg/s]
          */
         float RAT_SLOW;             
         
         /**
-         * #### Param #19
+         * #### Param #21
          * @brief Acceleration/Decleration magnetude limitation. [deg/s^2]
          * @note
          */
         float RAT_SLEWRATE;         
         
         /**
-         * #### Param #20
+         * #### Param #22
          * @brief Max feedForward control output for feedforward type1. [deg/s]
          * @note - The value of 0 meanse it is disabled.
          */
         float FF1_MAX;              
         
         /**
-         * #### Param #21
+         * #### Param #23
          * @brief Max feedforward control output for feedforward type2. [-]
          * @note - The value of 0 meanse it is disabled.
          */
         float FF2_MAX;              
 
         /**
-         * #### Param #22
+         * #### Param #24
          * @brief  Controller loop frequency. [Hz]
          * @note - Value: 0 -> Free Frequency-> time and frequency changed when controller become update.
          * @note - Value: non zero -> Lock Frequency-> time and frequency of controller update locked to FRQ value.
@@ -337,7 +350,7 @@ namespace AngleControllerNamespace
         float FRQ;                      
 
         /**
-         * #### Param #23
+         * #### Param #25
          * @brief Controller update mode. [-]
          * @note - 0: Manual update-> Controller output updated when call update function.
          * @note - 1: Auto update-> Controller output updated automatically at separated thread. 
@@ -346,36 +359,37 @@ namespace AngleControllerNamespace
         uint8_t UPDATE_MODE;
         
         /**
-         * #### Param #24
+         * #### Param #26
          * @brief PrimaryOutput deadzone value for maped controller output.
          * @note - The value of 0 meanse it is disabled.
          */
         float PRIM_DEADZONE;       
         
         /**
-         * #### Param #25
+         * #### Param #27
          * @brief Max PrimaryOutput value for maped controller output.
          * @note - The value of 0 meanse it is disabled.
          */
         float PRIM_MAX;            
         
         /**
-         * #### Param #26
+         * #### Param #28
          * @brief Range PrimaryOutput value for maped controller output.
          * @note - The value of 0 meanse it is disabled.
          */
         float PRIM_RANGE;          
         
         /**
-         * #### Param #27
+         * #### Param #29
          * @brief Range SecondaryOutput value for maped controller output.
          * @note - The value of 0 meanse it is disabled.
          */
         float SECON_RANGE;         
         
         /**
-         * #### Param #28
+         * #### Param #30
          * @brief Controller direction polarity. normal direction:0, reverse direction:1
+         * @warning The direction polarity of the output signal control must be set carefully, otherwise the system will malfunction.
          */
         uint8_t DIR_POL;           
     };
@@ -936,6 +950,7 @@ namespace AngleControllerNamespace
 
                 /**
                  * @brief The active zone for integral calculations.
+                 * @note - The value of 0 means it is disabled.
                  */
                 float IZONE;
             }parameters;

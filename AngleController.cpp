@@ -433,12 +433,15 @@ PIController::PIController()
 {
     parameters.I = 0;
     parameters.IMAX = 0;
+    parameters.IEXP = 0;
+    parameters.IZONE = 0;
     _ISum = 0;
 }
 
 bool PIController::_checkParams(void)
 {
-    if( (parameters.P < 0) || (parameters.I < 0) || (parameters.FF < 0) || (parameters.FFMAX < 0) || (parameters.IMAX < 0))
+    if( (parameters.P < 0) || (parameters.I < 0) || (parameters.FF < 0) || (parameters.FFMAX < 0) || (parameters.IMAX < 0) ||
+        (parameters.IZONE < 0) || (parameters.IEXP < 0) )
     {
         errorMessage = "Error PIController: one or some parameters are not valid.";
         return false;
@@ -474,7 +477,7 @@ double PIController::updateByTime(const double &desiredState, const double &stat
         return output;
     }
 
-    float frq = 1/dt;
+    double frq = 1.0/dt;
 
     output = updateByFrequency(desiredState, state, frq);
 
@@ -492,8 +495,25 @@ double PIController::updateByFrequency(const double &desiredState, const double 
     // Calculte error state.
     _e = desiredState - state;
 
+    float Ki_dynamic = parameters.I;
+
+    if(parameters.IEXP > 0)
+    {
+        Ki_dynamic = Ki_dynamic * exp(-abs(_e) * parameters.IEXP);
+    }
+
     // Integral section.
-    _ISum = (_ISum + parameters.I * _e / frq);
+    if(parameters.IZONE > 0)
+    {
+        if(abs(_e) < parameters.IZONE)
+        {
+            _ISum = (_ISum + Ki_dynamic * _e / frq);
+        }
+    }
+    else
+    {
+        _ISum = (_ISum + Ki_dynamic * _e / frq);
+    }
 
     // Limitation for integral controller.
     if(parameters.IMAX != 0)
@@ -525,7 +545,8 @@ PIDController::PIDController()
 
 bool PIDController::_checkParams(void)
 {
-    if( (parameters.P < 0) || (parameters.I < 0) || (parameters.D < 0) || (parameters.FF < 0) || (parameters.FFMAX < 0) || (parameters.IMAX < 0) || (parameters.FLTD < 0))
+    if( (parameters.P < 0) || (parameters.I < 0) || (parameters.D < 0) || (parameters.FF < 0) || (parameters.FFMAX < 0) || (parameters.IMAX < 0) || (parameters.FLTD < 0) ||
+        (parameters.IZONE <0) || (parameters.IEXP <0) )
     {
         errorMessage = "Error PIDController: one or some parameters are not valid.";
         return false;
@@ -761,32 +782,34 @@ AngleController_SingleDrive::AngleController_SingleDrive(void)
 {
     /* #1 */ parameters.ANG_P = 0;
     /* #2 */ parameters.ANG_I = 0;
-    /* #3 */ parameters.RAT_P = 0;
-    /* #4 */ parameters.RAT_I = 0;
-    /* #5 */ parameters.RAT_D = 0;
-    /* #6 */ parameters.FF1 = 0;
-    /* #7 */ parameters.FF2 = 0;
-    /* #8 */ parameters.FLTT = 0;
-    /* #9 */ parameters.FLTD = 0;
-    /* #10 */ parameters.FLTO = 0;
-    /* #11 */ parameters.ANG_LIMIT_ENA = false;
-    /* #12 */ parameters.ANG_UP_LIMIT = 0;
-    /* #13 */ parameters.ANG_DOWN_LIMIT = 0;
-    /* #14 */ parameters.ANG_IMAX = 0;
-    /* #15 */ parameters.RAT_IMAX = 0;
-    /* #16 */ parameters.RAT_MAX = 0;
-    /* #17 */ parameters.RAT_FAST = 0;
-    /* #18 */ parameters.RAT_SLOW = 0;
-    /* #19 */ parameters.RAT_SLEWRATE = 0;
-    /* #20 */ parameters.FF1_MAX = 0;
-    /* #21 */ parameters.FF2_MAX = 0;
-    /* #22 */ parameters.FRQ = 0;
-    /* #23 */ parameters.UPDATE_MODE = 0;
-    /* #24 */ parameters.PRIM_DEADZONE = 0;
-    /* #25 */ parameters.PRIM_MAX = 0;
-    /* #26 */ parameters.PRIM_RANGE = 0;
-    /* #27 */ parameters.SECON_RANGE = 0;
-    /* #28 */ parameters.DIR_POL = 0;
+    /* #3 */ parameters.ANG_IEXP = 0;
+    /* #4 */ parameters.ANG_IZONE = 0;
+    /* #5 */ parameters.RAT_P = 0;
+    /* #6 */ parameters.RAT_I = 0;
+    /* #7 */ parameters.RAT_D = 0;
+    /* #8 */ parameters.FF1 = 0;
+    /* #9 */ parameters.FF2 = 0;
+    /* #10 */ parameters.FLTT = 0;
+    /* #11 */ parameters.FLTD = 0;
+    /* #12 */ parameters.FLTO = 0;
+    /* #13 */ parameters.ANG_LIMIT_ENA = false;
+    /* #14 */ parameters.ANG_UP_LIMIT = 0;
+    /* #15 */ parameters.ANG_DOWN_LIMIT = 0;
+    /* #16 */ parameters.ANG_IMAX = 0;
+    /* #17 */ parameters.RAT_IMAX = 0;
+    /* #18 */ parameters.RAT_MAX = 0;
+    /* #19 */ parameters.RAT_FAST = 0;
+    /* #20 */ parameters.RAT_SLOW = 0;
+    /* #21 */ parameters.RAT_SLEWRATE = 0;
+    /* #22 */ parameters.FF1_MAX = 0;
+    /* #23 */ parameters.FF2_MAX = 0;
+    /* #24 */ parameters.FRQ = 0;
+    /* #25 */ parameters.UPDATE_MODE = 0;
+    /* #26 */ parameters.PRIM_DEADZONE = 0;
+    /* #27 */ parameters.PRIM_MAX = 0;
+    /* #28 */ parameters.PRIM_RANGE = 0;
+    /* #29 */ parameters.SECON_RANGE = 0;
+    /* #30 */ parameters.DIR_POL = 0;
 
     _mode = AngleController_Mode_None;
 
@@ -884,6 +907,8 @@ bool AngleController_SingleDrive::init(void)
 
     _PIAngle.parameters.P = parameters.ANG_P;
     _PIAngle.parameters.I = parameters.ANG_I;
+    _PIAngle.parameters.IEXP = parameters.ANG_IEXP;
+    _PIAngle.parameters.IZONE = parameters.ANG_IZONE;
     _PIAngle.parameters.FF = 0;
     _PIAngle.parameters.FFMAX = 0;
     _PIAngle.parameters.IMAX = parameters.ANG_IMAX;
@@ -902,7 +927,9 @@ bool AngleController_SingleDrive::init(void)
 bool AngleController_SingleDrive::_checkParameters(const AngleControllerNamespace::SingleDriveParams &data)
 {
     bool param_cond = (data.ANG_P >= 0) && 
-                      (data.ANG_I >= 0) &&             
+                      (data.ANG_I >= 0) &&
+                      (data.ANG_IEXP >= 0) &&
+                      (data.ANG_IZONE >= 0) &&             
                       (data.RAT_P >= 0) &&               
                       (data.RAT_I >= 0) &&             
                       (data.RAT_D >= 0) &&             
@@ -1031,8 +1058,6 @@ bool AngleController_SingleDrive::update(const uint64_t &T_now)
             _limitSlewRate.updateByFrequency(0, _frq);
             _PIDRate.clear();
             temp = _LPFO.updateByFrequency(temp, _frq);
-            outputs = _map.update(temp);
-            return true;
         break;
         case AngleController_Mode_Angle:
             _eAngle = _inputs.angleDes - _inputs.angle;
@@ -1061,16 +1086,38 @@ bool AngleController_SingleDrive::update(const uint64_t &T_now)
             return false;
     }
     
-    temp = _LPFT.updateByFrequency(temp, _frq);
-    temp = _limitSlewRate.updateByFrequency(temp, _frq);
-    _PIDRate.updateByFrequency(temp, _inputs.rateMaster, _frq);
-    temp = temp * parameters.FF2;
-    if(parameters.FF2_MAX > 0)
+    if(_mode != AngleController_Mode_Direct)
     {
-        temp = limit(temp, parameters.FF2_MAX);
+        temp = _LPFT.updateByFrequency(temp, _frq);
+        temp = _limitSlewRate.updateByFrequency(temp, _frq);
+        _PIDRate.updateByFrequency(temp, _inputs.rateMaster, _frq);
+        temp = temp * parameters.FF2;
+        if(parameters.FF2_MAX > 0)
+        {
+            temp = limit(temp, parameters.FF2_MAX);
+        }
+        temp = temp + _PIDRate.output;
+        temp = _LPFO.updateByFrequency(temp, _frq);
     }
-    temp = temp + _PIDRate.output;
-    temp = _LPFO.updateByFrequency(temp, _frq);
+
+    if(parameters.ANG_LIMIT_ENA == true)
+    {
+        if(_inputs.angle >= parameters.ANG_UP_LIMIT)
+        {
+            if(temp > 0)
+            {
+                temp = 0;
+            }
+        }
+        else if(_inputs.angle <= parameters.ANG_DOWN_LIMIT)
+        {
+            if(temp < 0)
+            {
+                temp = 0;
+            }
+        }
+    }
+
     outputs = _map.update(temp);
 
     return true;
@@ -1136,7 +1183,6 @@ void AngleController_SingleDrive::setInputs(const AngleControllerNamespace::Inpu
                 _inputs.rateDes = 0;
             }
         }
-
     }
 
     if(parameters.RAT_MAX != 0)
