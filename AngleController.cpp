@@ -1538,6 +1538,7 @@ bool AngleController_DualDriveEq::update(const uint64_t &T_now)
             _PIDEq.clear();
             _LPFO.updateByFrequency(0, _frq);
             outputs = _map.update(0);
+            outputsSlave = _map.update(0);
             return true;
         break;
         case AngleController_Mode_Direct:
@@ -1585,6 +1586,14 @@ bool AngleController_DualDriveEq::update(const uint64_t &T_now)
         {
             temp = limit(temp, parameters.basicParams.RAT_MAX);
         }
+
+        if(parameters.basicParams.ANG_LIMIT_ENA == true)
+        {
+            if( (abs(_inputs.angle - parameters.basicParams.ANG_DOWN_LIMIT) <= 10) || (abs(_inputs.angle - parameters.basicParams.ANG_UP_LIMIT) <= 10) )
+            {
+                temp = limit(temp, 1);
+            }
+        }
         
         temp = _LPFT.updateByFrequency(temp, _frq);
         temp = _limitSlewRate.updateByFrequency(temp, _frq);
@@ -1599,7 +1608,7 @@ bool AngleController_DualDriveEq::update(const uint64_t &T_now)
 
         temp = _PIDRate.updateByFrequency(temp, _inputs.rateMaster, _frq);
         
-        float tempSalve;
+        double tempSalve;
 
         tempSalve = _PIDRateSlave.updateByFrequency(temp, _inputs.rateSlave + _PIDEq.output, _frq);
 
