@@ -893,6 +893,8 @@ bool AngleController_SingleDrive::init(void)
 
     _PIDRate.parameters.P = parameters.RAT_P;
     _PIDRate.parameters.I = parameters.RAT_I;
+    _PIDRate.parameters.IEXP = 0;
+    _PIDRate.parameters.IZONE = 0;
     _PIDRate.parameters.D = parameters.RAT_D;
     _PIDRate.parameters.FF = 0;
     _PIDRate.parameters.FFMAX = 0;
@@ -1237,31 +1239,36 @@ float AngleController_SingleDrive::getRateDemanded(void)
 
 AngleController_DualDriveEq::AngleController_DualDriveEq()
 {
-    /*1*/   parameters.basicParams.ANG_P = 0;               
-    /*2*/   parameters.basicParams.RAT_P = 0;               
-    /*3*/   parameters.basicParams.RAT_I = 0;               
-    /*4*/   parameters.basicParams.RAT_D = 0;           
-    /*5*/   parameters.basicParams.FF1 = 0;                    
-    /*6*/   parameters.basicParams.FF2 = 0;                 
-    /*7*/   parameters.basicParams.FLTT = 0;              
-    /*8*/   parameters.basicParams.FLTD = 0;                 
-    /*9*/   parameters.basicParams.FLTO = 0;  
-    /*10*/  parameters.basicParams.ANG_UP_LIMIT = 0;
-    /*11*/  parameters.basicParams.ANG_DOWN_LIMIT = 0;              
-    /*12*/  parameters.basicParams.RAT_IMAX = 0;    
-    /*13*/  parameters.basicParams.RAT_MAX = 0;  
-    /*14*/  parameters.basicParams.RAT_FAST = 0;
-    /*15*/  parameters.basicParams.RAT_SLOW = 0;
-    /*16*/  parameters.basicParams.RAT_SLEWRATE = 0;
-    /*17*/  parameters.basicParams.FF1_MAX = 0;            
-    /*18*/  parameters.basicParams.FF2_MAX = 0;            
-    /*19*/  parameters.basicParams.FRQ = 0;                      
-    /*20*/  parameters.basicParams.UPDATE_MODE = 0;
-    /*21*/  parameters.basicParams.PRIM_DEADZONE = 0;  
-    /*22*/  parameters.basicParams.PRIM_MAX = 0;  
-    /*23*/  parameters.basicParams.PRIM_RANGE = 100;          
-    /*24*/  parameters.basicParams.SECON_RANGE = 0;          
-    /*25*/  parameters.basicParams.DIR_POL = 0; 
+    /*1*/   parameters.basicParams.ANG_P = 0; 
+    /*2*/   parameters.basicParams.ANG_I = 0;  
+    /*3*/   parameters.basicParams.ANG_IEXP = 0;
+    /*4*/   parameters.basicParams.ANG_IZONE = 0;            
+    /*5*/   parameters.basicParams.RAT_P = 0;               
+    /*6*/   parameters.basicParams.RAT_I = 0;               
+    /*7*/   parameters.basicParams.RAT_D = 0;           
+    /*8*/   parameters.basicParams.FF1 = 0;                    
+    /*9*/   parameters.basicParams.FF2 = 0;                 
+    /*10*/  parameters.basicParams.FLTT = 0;              
+    /*11*/  parameters.basicParams.FLTD = 0;                 
+    /*12*/  parameters.basicParams.FLTO = 0;  
+    /*13*/  parameters.basicParams.ANG_LIMIT_ENA = false;
+    /*14*/  parameters.basicParams.ANG_UP_LIMIT = 0;
+    /*15*/  parameters.basicParams.ANG_DOWN_LIMIT = 0;  
+    /*16*/  parameters.basicParams.ANG_IMAX = 0;            
+    /*17*/  parameters.basicParams.RAT_IMAX = 0;    
+    /*18*/  parameters.basicParams.RAT_MAX = 0;  
+    /*19*/  parameters.basicParams.RAT_FAST = 0;
+    /*20*/  parameters.basicParams.RAT_SLOW = 0;
+    /*21*/  parameters.basicParams.RAT_SLEWRATE = 0;
+    /*22*/  parameters.basicParams.FF1_MAX = 0;            
+    /*23*/  parameters.basicParams.FF2_MAX = 0;            
+    /*24*/  parameters.basicParams.FRQ = 0;                      
+    /*25*/  parameters.basicParams.UPDATE_MODE = 0;
+    /*26*/  parameters.basicParams.PRIM_DEADZONE = 0;  
+    /*27*/  parameters.basicParams.PRIM_MAX = 0;  
+    /*28*/  parameters.basicParams.PRIM_RANGE = 0;          
+    /*29*/  parameters.basicParams.SECON_RANGE = 0;          
+    /*30*/  parameters.basicParams.DIR_POL = 0; 
 
     parameters.BIAS = 0;
     parameters.FLTDQ = 0;
@@ -1271,7 +1278,7 @@ AngleController_DualDriveEq::AngleController_DualDriveEq()
     parameters.RAT_EQ_P = 0;
     parameters.SLAVE_DIR_POL = 0;
 
-    _mode = 0;
+    _mode = AngleController_Mode_None;
 
     clear();
 }
@@ -1312,14 +1319,24 @@ void AngleController_DualDriveEq::setInputs(const AngleControllerNamespace::Inpu
 {
      _inputs = data;
     
-    if(parameters.basicParams.ANG_UP_LIMIT != 0)
+    if(parameters.basicParams.ANG_LIMIT_ENA == true)
     {
-        _inputs.angleDes = limitUp(_inputs.angleDes, parameters.basicParams.ANG_UP_LIMIT);
-    }
-    
-    if(parameters.basicParams.ANG_DOWN_LIMIT != 0)
-    {
-        _inputs.angleDes = limitDown(_inputs.angleDes, parameters.basicParams.ANG_DOWN_LIMIT);
+        _inputs.angleDes = limit(_inputs.angleDes, parameters.basicParams.ANG_UP_LIMIT, parameters.basicParams.ANG_DOWN_LIMIT);
+
+        if(_inputs.angle >= parameters.basicParams.ANG_UP_LIMIT)
+        {
+            if(_inputs.rateDes > 0)
+            {
+                _inputs.rateDes = 0;
+            }
+        }
+        else if(_inputs.angle <= parameters.basicParams.ANG_DOWN_LIMIT)
+        {
+            if(_inputs.rateDes < 0)
+            {
+                _inputs.rateDes = 0;
+            }
+        }
     }
 
     if(parameters.basicParams.RAT_MAX != 0)
@@ -1381,7 +1398,7 @@ bool AngleController_DualDriveEq::init(void)
         _targetTime = 0;
     }
     
-    _map.parameters.PRIM_DEADZONE = 0;
+    _map.parameters.PRIM_DEADZONE = parameters.basicParams.PRIM_DEADZONE;
     _map.parameters.PRIM_MAX = parameters.basicParams.PRIM_MAX;
     _map.parameters.PRIM_RANGE = parameters.basicParams.PRIM_RANGE;
     _map.parameters.SECON_RANGE = parameters.basicParams.SECON_RANGE;
@@ -1393,13 +1410,13 @@ bool AngleController_DualDriveEq::init(void)
     
     if(!_map.init())
     {
-        errorMessage = _map.errorMessage;
+        errorMessage = "Error AngleController: " + _map.errorMessage;
         return false;
     }
 
     if(!_mapSlave.init())
     {
-        errorMessage = _mapSlave.errorMessage;
+        errorMessage = "Error AngleController: " + _mapSlave.errorMessage;
         return false;
     }
 
@@ -1433,6 +1450,8 @@ bool AngleController_DualDriveEq::init(void)
 
     _PIDRate.parameters.P = parameters.basicParams.RAT_P;
     _PIDRate.parameters.I = parameters.basicParams.RAT_I;
+    _PIDRate.parameters.IEXP = 0;
+    _PIDRate.parameters.IZONE = 0;
     _PIDRate.parameters.D = parameters.basicParams.RAT_D;
     _PIDRate.parameters.FF = 0;
     _PIDRate.parameters.FFMAX = 0;
@@ -1443,6 +1462,8 @@ bool AngleController_DualDriveEq::init(void)
 
     _PIDEq.parameters.P = parameters.RAT_EQ_P;
     _PIDEq.parameters.I = parameters.RAT_EQ_I;
+    _PIDEq.parameters.IEXP = 0;
+    _PIDEq.parameters.IZONE = 0;
     _PIDEq.parameters.D = parameters.RAT_EQ_D;
     _PIDEq.parameters.FF = 0;
     _PIDEq.parameters.FFMAX = 0;
@@ -1477,66 +1498,117 @@ bool AngleController_DualDriveEq::update(const uint64_t &T_now)
 {
     if( (T_now <= _T[0]) )
     {
+        if(T_now == _T[0])
+        {
+            return true;
+        }
+        errorMessage = "Error AngleController: The time differences in the controller cannot be negative.";
         return false;
+    }
+
+    if(parameters.basicParams.FRQ != 0)
+    {
+        if(T_now < (_T[0] + _targetTime))
+        {
+            // std::this_thread::sleep_for(std::chrono::microseconds(uint64_t(_T[1] + _targetTime - T_now)));
+            // _T[0] = _T[1] + _targetTime;
+            return true;
+        }
     }
 
     _T[1] = _T[0];
     _T[0] = T_now;
 
-    if(parameters.basicParams.FRQ != 0)
-    {
-        if(T_now < (_T[1] + _targetTime))
-        {
-            std::this_thread::sleep_for(std::chrono::microseconds(uint64_t(_T[1] + _targetTime - T_now)));
-            _T[0] = _T[1] + _targetTime;
-        }
-    }
-
     _dT = _T[0] - _T[1];
     
-    _frq = (1000000.0 / (float)_dT);
+    _frq = (1000000.0 / (double)_dT);
     
-    float temp;
+    double temp;
 
-    if(_mode == AngleController_Mode_Angle)
+    switch(_mode)
     {
-        // Error angle signal
-        _eAngle = _inputs.angleDes - _inputs.angle;
-        temp = _eAngle * parameters.basicParams.ANG_P + limit(_inputs.rateDes * parameters.basicParams.FF1, parameters.basicParams.FF1_MAX);
+        case AngleController_Mode_None:
+            _eAngle = 0;
+            _eRate = 0;
+            temp = 0;
+            _LPFT.updateByFrequency(0, _frq);
+            _limitSlewRate.updateByFrequency(0, _frq);
+            _PIDRate.clear();
+            _PIDRateSlave.clear();
+            _PIDEq.clear();
+            _LPFO.updateByFrequency(0, _frq);
+            outputs = _map.update(0);
+            return true;
+        break;
+        case AngleController_Mode_Direct:
+            _eAngle = 0;
+            _eRate = 0;
+            temp = _inputs.direct;
+            _LPFT.updateByFrequency(0, _frq);
+            _limitSlewRate.updateByFrequency(0, _frq);
+            _PIDRate.clear();
+            _PIDRate.clear();
+            _PIDEq.clear();
+            temp = _LPFO.updateByFrequency(temp, _frq);
+        break;
+        case AngleController_Mode_Angle:
+            // Error angle signal
+            _eAngle = _inputs.angleDes - _inputs.angle;
+            _eRate = 0;
+            temp = _eAngle * parameters.basicParams.ANG_P;
+        break;
+        case AngleController_Mode_Rate:
+            _eRate = _inputs.rateDes - _inputs.rateMaster;
+            _eAngle = 0;
+            temp = _inputs.rateDes;
+        break;
+        case AngleController_Mode_Tracking:
+            _eAngle = _inputs.angleDes - _inputs.angle;
+            _eRate = _inputs.rateDes - _inputs.rateMaster;
+            temp = _inputs.rateDes * (double)parameters.basicParams.FF1;
+
+            if(parameters.basicParams.FF1_MAX > 0)
+            {
+                temp = limit(temp, parameters.basicParams.FF1_MAX);
+            }
+
+            temp = temp + _eAngle * parameters.basicParams.ANG_P;
+        break;
+        default:
+            errorMessage = "Error AngleController: The mode number of controller is not correct value.";
+            return false;
     }
-    else if(_mode == AngleController_Mode_Rate)
+    
+    if(_mode != AngleController_Mode_Direct)
     {
-        _eRate = _inputs.rateDes - _inputs.rateMaster;
-        temp = _inputs.rateDes;
+        if(parameters.basicParams.RAT_MAX > 0)
+        {
+            temp = limit(temp, parameters.basicParams.RAT_MAX);
+        }
+        
+        temp = _LPFT.updateByFrequency(temp, _frq);
+        temp = _limitSlewRate.updateByFrequency(temp, _frq);
+        _rateDemanded = temp;
+
+        float FF2 = parameters.basicParams.FF2 * temp;
+
+        if(parameters.basicParams.FF2_MAX != 0)
+        {
+            FF2 = limit(FF2, parameters.basicParams.FF2_MAX);
+        }
+
+        temp = _PIDRate.updateByFrequency(temp, _inputs.rateMaster, _frq);
+        
+        float tempSalve;
+
+        tempSalve = _PIDRateSlave.updateByFrequency(temp, _inputs.rateSlave + _PIDEq.output, _frq);
+
+        _PIDEq.updateByFrequency(tempSalve, temp, _frq);
+
+        temp = (temp + tempSalve) * 0.5 + FF2;
+        temp = _LPFO.updateByFrequency(temp, _frq);
     }
-    
-    if(parameters.basicParams.RAT_MAX > 0)
-    {
-        temp = limit(temp, parameters.basicParams.RAT_MAX);
-    }
-    
-    temp = _LPFT.updateByFrequency(temp, _frq);
-    temp = _limitSlewRate.updateByFrequency(temp, _frq);
-    _rateDemanded = temp;
 
-    float FF2 = parameters.basicParams.FF2 * temp;
-
-    if(parameters.basicParams.FF2_MAX != 0)
-    {
-        FF2 = limit(FF2, parameters.basicParams.FF2_MAX);
-    }
-
-    temp = _PIDRate.updateByFrequency(temp, _inputs.rateMaster, _frq);
-    
-    float tempSalve;
-
-    tempSalve = _PIDRateSlave.updateByFrequency(temp, _inputs.rateSlave + _PIDEq.output, _frq);
-
-    _PIDEq.updateByFrequency(tempSalve, temp, _frq);
-
-    temp = (temp + tempSalve) * 0.5 + FF2;
-    temp = _LPFO.updateByFrequency(temp, _frq);
-    
     if(parameters.basicParams.PRIM_DEADZONE > 0)
     {
         if(abs(temp) < parameters.basicParams.PRIM_DEADZONE)
@@ -1550,6 +1622,24 @@ bool AngleController_DualDriveEq::update(const uint64_t &T_now)
                 temp = -parameters.basicParams.PRIM_DEADZONE;
             }
             else
+            {
+                temp = 0;
+            }
+        }
+    }
+
+    if(parameters.basicParams.ANG_LIMIT_ENA == true)
+    {
+        if(_inputs.angle >= parameters.basicParams.ANG_UP_LIMIT)
+        {
+            if(temp > 0)
+            {
+                temp = 0;
+            }
+        }
+        else if(_inputs.angle <= parameters.basicParams.ANG_DOWN_LIMIT)
+        {
+            if(temp < 0)
             {
                 temp = 0;
             }
