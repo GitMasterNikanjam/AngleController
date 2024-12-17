@@ -14,6 +14,8 @@ SingleDriveParams::SingleDriveParams()
 {
     /* #1 */ ANG_P = 0;
     /* #2 */ ANG_I = 0;
+             ANG_IEXP = 0;
+             ANG_IZONE = 0;
     /* #3 */ RAT_P = 0;
     /* #4 */ RAT_I = 0;
     /* #5 */ RAT_D = 0;
@@ -50,6 +52,37 @@ DualDriveParams::DualDriveParams()
 
 DualDriveEqParams::DualDriveEqParams()
 {
+    /* #1 */ basicParams.ANG_P = 0;
+    /* #2 */ basicParams.ANG_I = 0;
+             basicParams.ANG_IEXP = 0;
+             basicParams.ANG_IZONE = 0;
+    /* #3 */ basicParams.RAT_P = 0;
+    /* #4 */ basicParams.RAT_I = 0;
+    /* #5 */ basicParams.RAT_D = 0;
+    /* #6 */ basicParams.FF1 = 0;
+    /* #7 */ basicParams.FF2 = 0;
+    /* #8 */ basicParams.FLTT = 0;
+    /* #9 */ basicParams.FLTD = 0;
+    /* #10 */ basicParams.FLTO = 0;
+    /* #11 */ basicParams.ANG_LIMIT_ENA = false;
+    /* #12 */ basicParams.ANG_UP_LIMIT = 0;
+    /* #13 */ basicParams.ANG_DOWN_LIMIT = 0;
+    /* #14 */ basicParams.ANG_IMAX = 0;
+    /* #15 */ basicParams.RAT_IMAX = 0;
+    /* #16 */ basicParams.RAT_MAX = 0;
+    /* #17 */ basicParams.RAT_FAST = 0;
+    /* #18 */ basicParams.RAT_SLOW = 0;
+    /* #19 */ basicParams.RAT_SLEWRATE = 0;
+    /* #20 */ basicParams.FF1_MAX = 0;
+    /* #21 */ basicParams.FF2_MAX = 0;
+    /* #22 */ basicParams.FRQ = 0;
+    /* #23 */ basicParams.UPDATE_MODE = 0;
+    /* #24 */ basicParams.PRIM_DEADZONE = 0;
+    /* #25 */ basicParams.PRIM_MAX = 0;
+    /* #26 */ basicParams.PRIM_RANGE = 0;
+    /* #27 */ basicParams.SECON_RANGE = 0;
+    /* #28 */ basicParams.DIR_POL = 0;
+
     BIAS = 0;
     RAT_EQ_P = 0;
     RAT_EQ_I = 0;
