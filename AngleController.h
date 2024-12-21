@@ -1385,6 +1385,8 @@ class AngleController_DualDriveEq : public AngleController_SingleDrive
          *  */                                                 
          bool setParams(const AngleControllerNamespace::DualDriveEqParams &data);
 
+         bool refreshParams(void);
+
         // -------------------------------------------
         // Virtual functions:
 

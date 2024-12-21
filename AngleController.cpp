@@ -1390,37 +1390,12 @@ bool AngleController_DualDriveEq::setParams(const AngleControllerNamespace::Dual
     return true;
 }
 
-void AngleController_DualDriveEq::getParams(AngleControllerNamespace::DualDriveEqParams *data)
+bool AngleController_DualDriveEq::refreshParams(void)
 {
-    *data = parameters;
-}
-
-bool AngleController_DualDriveEq::_checkParameters(const AngleControllerNamespace::DualDriveEqParams &data)
-{
-
-   bool param_cond = AngleController_SingleDrive::_checkParameters(data.basicParams);                 
-
-    param_cond = param_cond && (parameters.BIAS >= 0) && (parameters.FLTDQ >= 0) && (parameters.RAT_EQ_D >= 0) &&
-                 (parameters.RAT_EQ_I >= 0) && (parameters.RAT_EQ_IMAX >= 0) && (parameters.RAT_EQ_P >= 0);
-
-    
-    if(!param_cond)
-    {
-        errorMessage = "Error AngleController: one or some parameters have not correct value.";
-        return false;
-    }
-
-    return true;
-}
-
-bool AngleController_DualDriveEq::init(void)
-{   
     if(!_checkParameters(parameters))
     {
         return false;
     }
-
-    clear();
 
     if(parameters.basicParams.FRQ > 0)
     {
@@ -1527,6 +1502,41 @@ bool AngleController_DualDriveEq::init(void)
     return true;
 }
 
+void AngleController_DualDriveEq::getParams(AngleControllerNamespace::DualDriveEqParams *data)
+{
+    *data = parameters;
+}
+
+bool AngleController_DualDriveEq::_checkParameters(const AngleControllerNamespace::DualDriveEqParams &data)
+{
+
+   bool param_cond = AngleController_SingleDrive::_checkParameters(data.basicParams);                 
+
+    param_cond = param_cond && (parameters.BIAS >= 0) && (parameters.FLTDQ >= 0) && (parameters.RAT_EQ_D >= 0) &&
+                 (parameters.RAT_EQ_I >= 0) && (parameters.RAT_EQ_IMAX >= 0) && (parameters.RAT_EQ_P >= 0);
+
+    
+    if(!param_cond)
+    {
+        errorMessage = "Error AngleController: one or some parameters have not correct value.";
+        return false;
+    }
+
+    return true;
+}
+
+bool AngleController_DualDriveEq::init(void)
+{   
+    if(!refreshParams())
+    {
+        return false;
+    }
+
+    clear();
+
+    return true;
+}
+
 bool AngleController_DualDriveEq::update(const uint64_t &T_now)
 {
     if( (T_now <= _T[0]) )
@@ -1615,17 +1625,52 @@ bool AngleController_DualDriveEq::update(const uint64_t &T_now)
     
     if(_mode != AngleController_Mode_Direct)
     {
+        if(parameters.basicParams.ANG_LIMIT_ENA == true)
+        {
+            float _LLStar;
+            float _HLStar;
+            float _VLStar;
+            float _VHStar;
+
+            if(parameters.basicParams.RAT_SLEWRATE > 0)
+            {
+                float _2Amax = 2 * parameters.basicParams.RAT_SLEWRATE;
+                float _V2_2Amax;
+                if(parameters.basicParams.RAT_MAX > 0)
+                {
+                    _V2_2Amax = parameters.basicParams.RAT_MAX * parameters.basicParams.RAT_MAX / _2Amax;
+                }
+                else
+                {
+                    _V2_2Amax = _inputs.rateMaster * _inputs.rateMaster / _2Amax;
+                }
+                
+                _LLStar = parameters.basicParams.ANG_DOWN_LIMIT + _V2_2Amax;
+                _HLStar = parameters.basicParams.ANG_UP_LIMIT - _V2_2Amax;
+                _VLStar = sqrt(_2Amax * abs(_inputs.angle - parameters.basicParams.ANG_DOWN_LIMIT)); 
+                _VHStar = sqrt(_2Amax * abs(_inputs.angle - parameters.basicParams.ANG_UP_LIMIT));
+            }
+            else
+            {
+                _LLStar = parameters.basicParams.ANG_DOWN_LIMIT + 10;
+                _HLStar = parameters.basicParams.ANG_UP_LIMIT - 10;
+                _VLStar = 1; 
+                _VHStar = 1;
+            }
+            
+            if( (_inputs.angle >= parameters.basicParams.ANG_DOWN_LIMIT) && (_inputs.angle <= _LLStar) )
+            {
+                temp = limitDown(temp, -_VLStar);
+            }
+            else if( (_inputs.angle >= _HLStar) && (_inputs.angle <= parameters.basicParams.ANG_UP_LIMIT) )
+            {
+                temp = limitUp(temp, _VHStar);
+            }
+        }
+
         if(parameters.basicParams.RAT_MAX > 0)
         {
             temp = limit(temp, parameters.basicParams.RAT_MAX);
-        }
-
-        if(parameters.basicParams.ANG_LIMIT_ENA == true)
-        {
-            if( (abs(_inputs.angle - parameters.basicParams.ANG_DOWN_LIMIT) <= 10) || (abs(_inputs.angle - parameters.basicParams.ANG_UP_LIMIT) <= 10) )
-            {
-                temp = limit(temp, 1);
-            }
         }
         
         temp = _LPFT.updateByFrequency(temp, _frq);
@@ -1664,24 +1709,6 @@ bool AngleController_DualDriveEq::update(const uint64_t &T_now)
                 temp = -parameters.basicParams.PRIM_DEADZONE;
             }
             else
-            {
-                temp = 0;
-            }
-        }
-    }
-
-    if(parameters.basicParams.ANG_LIMIT_ENA == true)
-    {
-        if(_inputs.angle >= parameters.basicParams.ANG_UP_LIMIT)
-        {
-            if(temp > 0)
-            {
-                temp = 0;
-            }
-        }
-        else if(_inputs.angle <= parameters.basicParams.ANG_DOWN_LIMIT)
-        {
-            if(temp < 0)
             {
                 temp = 0;
             }
