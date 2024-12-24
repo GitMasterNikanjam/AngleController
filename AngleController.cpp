@@ -745,6 +745,9 @@ AngleControllerNamespace::Outputs MAP::update(const double &input)
     if(input == 0)
     {
         outputs.dir = 0;
+        outputs.primaryOutput = 0;
+        outputs.secondaryOutput = 0;
+        return outputs;
     }
     else if(input > 0)
     {
@@ -1273,9 +1276,9 @@ float AngleController_SingleDrive::getRateDemanded(void)
 AngleController_DualDriveEq::AngleController_DualDriveEq()
 {
     /*1*/   parameters.basicParams.ANG_P = 0; 
-    /*2*/   parameters.basicParams.ANG_I = 0;  
+    /*2*/   parameters.basicParams.ANG_I = 0;
     /*3*/   parameters.basicParams.ANG_IEXP = 0;
-    /*4*/   parameters.basicParams.ANG_IZONE = 0;            
+    /*4*/   parameters.basicParams.ANG_IZONE = 0;         
     /*5*/   parameters.basicParams.RAT_P = 0;               
     /*6*/   parameters.basicParams.RAT_I = 0;               
     /*7*/   parameters.basicParams.RAT_D = 0;           
@@ -1286,8 +1289,8 @@ AngleController_DualDriveEq::AngleController_DualDriveEq()
     /*12*/  parameters.basicParams.FLTO = 0;  
     /*13*/  parameters.basicParams.ANG_LIMIT_ENA = false;
     /*14*/  parameters.basicParams.ANG_UP_LIMIT = 0;
-    /*15*/  parameters.basicParams.ANG_DOWN_LIMIT = 0;  
-    /*16*/  parameters.basicParams.ANG_IMAX = 0;            
+    /*15*/  parameters.basicParams.ANG_DOWN_LIMIT = 0;
+    /*16*/  parameters.basicParams.ANG_IMAX = 0;             
     /*17*/  parameters.basicParams.RAT_IMAX = 0;    
     /*18*/  parameters.basicParams.RAT_MAX = 0;  
     /*19*/  parameters.basicParams.RAT_FAST = 0;
@@ -1345,6 +1348,7 @@ void AngleController_DualDriveEq::clear(void)
     _PIDRate.clear();
     _PIDEq.clear();
     _PIDRateSlave.clear();
+    _PIAngle.clear();
     _limitSlewRate.clear();
 }
 
@@ -1406,7 +1410,7 @@ bool AngleController_DualDriveEq::refreshParams(void)
         _targetTime = 0;
     }
     
-    _map.parameters.PRIM_DEADZONE = parameters.basicParams.PRIM_DEADZONE;
+    _map.parameters.PRIM_DEADZONE = 0;
     _map.parameters.PRIM_MAX = parameters.basicParams.PRIM_MAX;
     _map.parameters.PRIM_RANGE = parameters.basicParams.PRIM_RANGE;
     _map.parameters.SECON_RANGE = parameters.basicParams.SECON_RANGE;
@@ -1497,6 +1501,20 @@ bool AngleController_DualDriveEq::refreshParams(void)
         return false;
     }
     
+    _PIAngle.parameters.P = parameters.basicParams.ANG_P;
+    _PIAngle.parameters.I = parameters.basicParams.ANG_I;
+    _PIAngle.parameters.IEXP = parameters.basicParams.ANG_IEXP;
+    _PIAngle.parameters.IZONE = parameters.basicParams.ANG_IZONE;
+    _PIAngle.parameters.FF = 0;
+    _PIAngle.parameters.FFMAX = 0;
+    _PIAngle.parameters.IMAX = parameters.basicParams.ANG_IMAX;
+    
+    if(!_PIAngle.init())
+    {
+        errorMessage = _PIAngle.errorMessage;
+        return false;
+    }
+
     _limitSlewRate.setLimit(parameters.basicParams.RAT_SLEWRATE);
     
     return true;
@@ -1574,6 +1592,7 @@ bool AngleController_DualDriveEq::update(const uint64_t &T_now)
             _eAngle = 0;
             _eRate = 0;
             temp = 0;
+            _PIAngle.clear();
             _LPFT.updateByFrequency(0, _frq);
             _limitSlewRate.updateByFrequency(0, _frq);
             _PIDRate.clear();
@@ -1588,18 +1607,19 @@ bool AngleController_DualDriveEq::update(const uint64_t &T_now)
             _eAngle = 0;
             _eRate = 0;
             temp = _inputs.direct;
+            _PIAngle.clear();
             _LPFT.updateByFrequency(0, _frq);
             _limitSlewRate.updateByFrequency(0, _frq);
             _PIDRate.clear();
             _PIDRate.clear();
             _PIDEq.clear();
-            temp = _LPFO.updateByFrequency(temp, _frq);
         break;
         case AngleController_Mode_Angle:
             // Error angle signal
             _eAngle = _inputs.angleDes - _inputs.angle;
             _eRate = 0;
-            temp = _eAngle * parameters.basicParams.ANG_P;
+            temp = _PIAngle.updateByFrequency(_inputs.angleDes, _inputs.angle, _frq);
+            // temp = _eAngle * parameters.basicParams.ANG_P;
         break;
         case AngleController_Mode_Rate:
             _eRate = _inputs.rateDes - _inputs.rateMaster;
@@ -1616,7 +1636,8 @@ bool AngleController_DualDriveEq::update(const uint64_t &T_now)
                 temp = limit(temp, parameters.basicParams.FF1_MAX);
             }
 
-            temp = temp + _eAngle * parameters.basicParams.ANG_P;
+            temp = temp + _PIAngle.updateByFrequency(_inputs.angleDes, _inputs.angle, _frq);
+            // temp = temp + _eAngle * parameters.basicParams.ANG_P;
         break;
         default:
             errorMessage = "Error AngleController: The mode number of controller is not correct value.";
@@ -1698,7 +1719,7 @@ bool AngleController_DualDriveEq::update(const uint64_t &T_now)
 
     if(parameters.basicParams.PRIM_DEADZONE > 0)
     {
-        if(abs(temp) < parameters.basicParams.PRIM_DEADZONE)
+        if( (abs(temp) < parameters.basicParams.PRIM_DEADZONE))
         {
             if(temp > 0)
             {
@@ -1707,10 +1728,6 @@ bool AngleController_DualDriveEq::update(const uint64_t &T_now)
             else if(temp < 0)
             {
                 temp = -parameters.basicParams.PRIM_DEADZONE;
-            }
-            else
-            {
-                temp = 0;
             }
         }
     }
